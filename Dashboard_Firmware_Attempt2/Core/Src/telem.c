@@ -1,10 +1,8 @@
 #include <stdint.h>
 #include <stdio.h>
-#include "ugui.h"
 #include "telem.h"
 #include "can_manager.h"
 #include "wheel_speed.h"
-#include "traction_control.h"
 
 const uint8_t packet_validation[2] = {0x00, 0xff};
 uint32_t send_time;
@@ -27,7 +25,6 @@ void telem_send(void) {
 				p.data[3] = rear_left_wheel_speed;
 				break;
 			case 1:
-				p.data[0] = (current_slip_ratio*100);
 				p.data[1] = outlet_temp;
 				p.data[2] = inlet_pres;
 				p.data[3] = outlet_pres;

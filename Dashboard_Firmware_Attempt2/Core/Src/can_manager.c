@@ -1,7 +1,6 @@
 #include "can_manager.h"
 #include "sd_card.h"
 #include "serial_print.h"
-#include "traction_control.h"
 
 volatile uint8_t mc_lockout;
 volatile uint8_t mc_enabled;
@@ -221,37 +220,37 @@ static CAN_TxHeaderTypeDef   TxHeader;
 static uint32_t              TxMailbox;
 
 //  transmit state
-void can_tx_vcu_state(CAN_HandleTypeDef *hcan){
-	static uint8_t vcu_state_msg_counter = 0;
-
-	TxHeader.IDE = CAN_ID_STD;
-	TxHeader.StdId = VEHICLE_STATE;
-	TxHeader.RTR = CAN_RTR_DATA;
-	TxHeader.DLC = 8;
-	uint16_t tick = (uint16_t)HAL_GetTick();
-	uint8_t data_tx_state[8] = {
-        0,
-        is_hv_requested(),
-        throttle1.percent,
-        throttle2.percent,
-		brake.percent,
-        one_byte_state(),
-		(tick >> 8) & 0xFF,
-		tick & 0xFF
-    };
-
-	if (vcu_state_msg_counter == 0)
-		sd_card_write_can_tx(TxHeader, data_tx_state);
-
-	vcu_state_msg_counter++;
-	vcu_state_msg_counter %= 50;
-
-    if (HAL_CAN_AddTxMessage(hcan, &TxHeader, data_tx_state, &TxMailbox) != HAL_OK)
-	{
-	  print("CAN Tx failed\r\n");
-	}
-//    write_tx_to_sd(TxHeader, data_tx_state);
-}
+//void can_tx_vcu_state(CAN_HandleTypeDef *hcan){
+//	static uint8_t vcu_state_msg_counter = 0;
+//
+//	TxHeader.IDE = CAN_ID_STD;
+//	TxHeader.StdId = VEHICLE_STATE;
+//	TxHeader.RTR = CAN_RTR_DATA;
+//	TxHeader.DLC = 8;
+//	uint16_t tick = (uint16_t)HAL_GetTick();
+//	uint8_t data_tx_state[8] = {
+//        0,
+//        is_hv_requested(),
+//        throttle1.percent,
+//        throttle2.percent,
+//		brake.percent,
+//        one_byte_state(),
+//		(tick >> 8) & 0xFF,
+//		tick & 0xFF
+//    };
+//
+//	if (vcu_state_msg_counter == 0)
+//		sd_card_write_can_tx(TxHeader, data_tx_state);
+//
+//	vcu_state_msg_counter++;
+//	vcu_state_msg_counter %= 50;
+//
+//    if (HAL_CAN_AddTxMessage(hcan, &TxHeader, data_tx_state, &TxMailbox) != HAL_OK)
+//	{
+//	  print("CAN Tx failed\r\n");
+//	}
+////    write_tx_to_sd(TxHeader, data_tx_state);
+//}
 
 HAL_StatusTypeDef CAN_Send(CAN_HandleTypeDef *hcan, uint32_t id, uint8_t* data, uint8_t len)
 {
@@ -265,37 +264,37 @@ HAL_StatusTypeDef CAN_Send(CAN_HandleTypeDef *hcan, uint32_t id, uint8_t* data, 
 	return HAL_CAN_AddTxMessage(hcan, &msg_hdr, data, &TxMailbox);
 }
 
-//  transmit state
-void can_tx_sg(CAN_HandleTypeDef *hcan, uint16_t adc){
-	static uint8_t tc_sg_msg_counter = 0;
-
-	TxHeader.IDE = CAN_ID_STD;
-	TxHeader.StdId = 0x500;
-	TxHeader.RTR = CAN_RTR_DATA;
-	TxHeader.DLC = 6;
-	uint8_t data_tx_state[6] = {
-		(adc >> 8) & 0xFF,
-		(adc & 0xFF),
-		front_right_wheel_speed >> 8,
-		front_right_wheel_speed & 0xff,
-//		front_left_wheel_speed >> 8,
-//		front_left_wheel_speed & 0xff,
-		TC_torque_req  >> 8,
-		TC_torque_req & 0xff,
-    };
-
-	if (tc_sg_msg_counter == 0)
-		sd_card_write_can_tx(TxHeader, data_tx_state);
-
-	tc_sg_msg_counter++;
-	tc_sg_msg_counter %= 2;
-
-    if (HAL_CAN_AddTxMessage(hcan, &TxHeader, data_tx_state, &TxMailbox) != HAL_OK)
-	{
-	  print("CAN Tx failed\r\n");
-	}
-//    write_tx_to_sd(TxHeader, data_tx_state);
-}
+////  transmit state
+//void can_tx_sg(CAN_HandleTypeDef *hcan, uint16_t adc){
+//	static uint8_t tc_sg_msg_counter = 0;
+//
+//	TxHeader.IDE = CAN_ID_STD;
+//	TxHeader.StdId = 0x500;
+//	TxHeader.RTR = CAN_RTR_DATA;
+//	TxHeader.DLC = 6;
+//	uint8_t data_tx_state[6] = {
+//		(adc >> 8) & 0xFF,
+//		(adc & 0xFF),
+//		front_right_wheel_speed >> 8,
+//		front_right_wheel_speed & 0xff,
+////		front_left_wheel_speed >> 8,
+////		front_left_wheel_speed & 0xff,
+//		TC_torque_req  >> 8,
+//		TC_torque_req & 0xff,
+//    };
+//
+//	if (tc_sg_msg_counter == 0)
+//		sd_card_write_can_tx(TxHeader, data_tx_state);
+//
+//	tc_sg_msg_counter++;
+//	tc_sg_msg_counter %= 2;
+//
+//    if (HAL_CAN_AddTxMessage(hcan, &TxHeader, data_tx_state, &TxMailbox) != HAL_OK)
+//	{
+//	  print("CAN Tx failed\r\n");
+//	}
+////    write_tx_to_sd(TxHeader, data_tx_state);
+//}
 
 
 // transmit torque request

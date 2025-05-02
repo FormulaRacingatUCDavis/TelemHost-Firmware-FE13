@@ -28,14 +28,10 @@
 #include "can_manager.h"
 #include "sensors.h"
 #include "fsm.h"
-#include "traction_control.h"
-#include "frucd_display.h"
 #include "sd_card.h"
 #include "wheel_speed.h"
 #include "telem.h"
 #include "xsens.h"
-#include "driver_input.h"
-#include "ugui.h"
 #include "serial_print.h"
 #include "config.h"
 
@@ -58,11 +54,6 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
-ADC_HandleTypeDef hadc3;
-DMA_HandleTypeDef hdma_adc1;
-DMA_HandleTypeDef hdma_adc3;
-
 CAN_HandleTypeDef hcan1;
 CAN_HandleTypeDef hcan2;
 
@@ -73,14 +64,11 @@ DMA_HandleTypeDef hdma_sdmmc1_tx;
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim7;
-TIM_HandleTypeDef htim9;
 
 UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart7;
 UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_uart4_rx;
-
-SRAM_HandleTypeDef hsram1;
 
 /* Definitions for DashboardMain */
 osThreadId_t DashboardMainHandle;
@@ -111,17 +99,13 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_CAN2_Init(void);
 static void MX_SDMMC1_SD_Init(void);
-static void MX_ADC1_Init(void);
-static void MX_ADC3_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_UART4_Init(void);
 static void MX_UART7_Init(void);
-static void MX_FMC_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_TIM7_Init(void);
 static void MX_TIM1_Init(void);
-static void MX_TIM9_Init(void);
 void MainEntry(void *argument);
 void SDCardEntry(void *argument);
 
@@ -189,18 +173,14 @@ int main(void)
   MX_DMA_Init();
   MX_CAN2_Init();
   MX_SDMMC1_SD_Init();
-  MX_ADC1_Init();
-  MX_ADC3_Init();
   MX_TIM4_Init();
   MX_UART4_Init();
   MX_UART7_Init();
-  MX_FMC_Init();
   MX_CAN1_Init();
   MX_USART3_UART_Init();
   MX_TIM7_Init();
   MX_FATFS_Init();
   MX_TIM1_Init();
-  MX_TIM9_Init();
   /* USER CODE BEGIN 2 */
 
 //  mount_sd_card();
@@ -307,110 +287,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-}
-
-/**
-  * @brief ADC1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_ADC1_Init(void)
-{
-
-  /* USER CODE BEGIN ADC1_Init 0 */
-
-  /* USER CODE END ADC1_Init 0 */
-
-  ADC_ChannelConfTypeDef sConfig = {0};
-
-  /* USER CODE BEGIN ADC1_Init 1 */
-
-  /* USER CODE END ADC1_Init 1 */
-
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
-  */
-  hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
-  hadc1.Init.DiscontinuousConvMode = DISABLE;
-  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 1;
-  hadc1.Init.DMAContinuousRequests = DISABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-  if (HAL_ADC_Init(&hadc1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_10;
-  sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN ADC1_Init 2 */
-//
-  /* USER CODE END ADC1_Init 2 */
-
-}
-
-/**
-  * @brief ADC3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_ADC3_Init(void)
-{
-
-  /* USER CODE BEGIN ADC3_Init 0 */
-
-  /* USER CODE END ADC3_Init 0 */
-
-  ADC_ChannelConfTypeDef sConfig = {0};
-
-  /* USER CODE BEGIN ADC3_Init 1 */
-
-  /* USER CODE END ADC3_Init 1 */
-
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
-  */
-  hadc3.Instance = ADC3;
-  hadc3.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-  hadc3.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc3.Init.ScanConvMode = ADC_SCAN_DISABLE;
-  hadc3.Init.ContinuousConvMode = DISABLE;
-  hadc3.Init.DiscontinuousConvMode = DISABLE;
-  hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-  hadc3.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc3.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc3.Init.NbrOfConversion = 1;
-  hadc3.Init.DMAContinuousRequests = DISABLE;
-  hadc3.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-  if (HAL_ADC_Init(&hadc3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_8;
-  sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN ADC3_Init 2 */
-
-  /* USER CODE END ADC3_Init 2 */
-
 }
 
 /**
@@ -565,9 +441,7 @@ static void MX_TIM1_Init(void)
   /* USER CODE END TIM1_Init 0 */
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_SlaveConfigTypeDef sSlaveConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_IC_InitTypeDef sConfigIC = {0};
 
   /* USER CODE BEGIN TIM1_Init 1 */
 
@@ -588,30 +462,10 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_TIM_IC_Init(&htim1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
-  sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
-  sSlaveConfig.TriggerPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
-  sSlaveConfig.TriggerFilter = 0;
-  if (HAL_TIM_SlaveConfigSynchro(&htim1, &sSlaveConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
-  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
-  sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
-  sConfigIC.ICFilter = 0;
-  if (HAL_TIM_IC_ConfigChannel(&htim1, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -649,11 +503,8 @@ static void MX_TIM4_Init(void)
   {
     Error_Handler();
   }
-  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_EXTERNAL1;
-  sSlaveConfig.InputTrigger = TIM_TS_ETRF;
-  sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_NONINVERTED;
-  sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
-  sSlaveConfig.TriggerFilter = 0;
+  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_DISABLE;
+  sSlaveConfig.InputTrigger = TIM_TS_ITR0;
   if (HAL_TIM_SlaveConfigSynchro(&htim4, &sSlaveConfig) != HAL_OK)
   {
     Error_Handler();
@@ -706,47 +557,6 @@ static void MX_TIM7_Init(void)
   NVIC_EnableIRQ(TIM7_IRQn);
 
   /* USER CODE END TIM7_Init 2 */
-
-}
-
-/**
-  * @brief TIM9 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM9_Init(void)
-{
-
-  /* USER CODE BEGIN TIM9_Init 0 */
-
-  /* USER CODE END TIM9_Init 0 */
-
-  TIM_SlaveConfigTypeDef sSlaveConfig = {0};
-
-  /* USER CODE BEGIN TIM9_Init 1 */
-
-  /* USER CODE END TIM9_Init 1 */
-  htim9.Instance = TIM9;
-  htim9.Init.Prescaler = 0;
-  htim9.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim9.Init.Period = 65535;
-  htim9.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim9.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim9) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_EXTERNAL1;
-  sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
-  sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
-  sSlaveConfig.TriggerFilter = 0;
-  if (HAL_TIM_SlaveConfigSynchro(&htim9, &sSlaveConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM9_Init 2 */
-
-  /* USER CODE END TIM9_Init 2 */
 
 }
 
@@ -869,12 +679,6 @@ static void MX_DMA_Init(void)
   /* DMA1_Stream2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream2_IRQn);
-  /* DMA2_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
-  /* DMA2_Stream1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
   /* DMA2_Stream3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
@@ -882,60 +686,6 @@ static void MX_DMA_Init(void)
   HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
 
-}
-
-/* FMC initialization function */
-static void MX_FMC_Init(void)
-{
-
-  /* USER CODE BEGIN FMC_Init 0 */
-
-  /* USER CODE END FMC_Init 0 */
-
-  FMC_NORSRAM_TimingTypeDef Timing = {0};
-
-  /* USER CODE BEGIN FMC_Init 1 */
-
-  /* USER CODE END FMC_Init 1 */
-
-  /** Perform the SRAM1 memory initialization sequence
-  */
-  hsram1.Instance = FMC_NORSRAM_DEVICE;
-  hsram1.Extended = FMC_NORSRAM_EXTENDED_DEVICE;
-  /* hsram1.Init */
-  hsram1.Init.NSBank = FMC_NORSRAM_BANK1;
-  hsram1.Init.DataAddressMux = FMC_DATA_ADDRESS_MUX_DISABLE;
-  hsram1.Init.MemoryType = FMC_MEMORY_TYPE_SRAM;
-  hsram1.Init.MemoryDataWidth = FMC_NORSRAM_MEM_BUS_WIDTH_16;
-  hsram1.Init.BurstAccessMode = FMC_BURST_ACCESS_MODE_DISABLE;
-  hsram1.Init.WaitSignalPolarity = FMC_WAIT_SIGNAL_POLARITY_LOW;
-  hsram1.Init.WaitSignalActive = FMC_WAIT_TIMING_BEFORE_WS;
-  hsram1.Init.WriteOperation = FMC_WRITE_OPERATION_ENABLE;
-  hsram1.Init.WaitSignal = FMC_WAIT_SIGNAL_DISABLE;
-  hsram1.Init.ExtendedMode = FMC_EXTENDED_MODE_DISABLE;
-  hsram1.Init.AsynchronousWait = FMC_ASYNCHRONOUS_WAIT_DISABLE;
-  hsram1.Init.WriteBurst = FMC_WRITE_BURST_DISABLE;
-  hsram1.Init.ContinuousClock = FMC_CONTINUOUS_CLOCK_SYNC_ONLY;
-  hsram1.Init.WriteFifo = FMC_WRITE_FIFO_ENABLE;
-  hsram1.Init.PageSize = FMC_PAGE_SIZE_NONE;
-  /* Timing */
-  Timing.AddressSetupTime = 15;
-  Timing.AddressHoldTime = 15;
-  Timing.DataSetupTime = 255;
-  Timing.BusTurnAroundDuration = 15;
-  Timing.CLKDivision = 16;
-  Timing.DataLatency = 17;
-  Timing.AccessMode = FMC_ACCESS_MODE_A;
-  /* ExtTiming */
-
-  if (HAL_SRAM_Init(&hsram1, &Timing, NULL) != HAL_OK)
-  {
-    Error_Handler( );
-  }
-
-  /* USER CODE BEGIN FMC_Init 2 */
-
-  /* USER CODE END FMC_Init 2 */
 }
 
 /**
@@ -950,39 +700,22 @@ static void MX_GPIO_Init(void)
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : HARD_BSPD_Pin */
-  GPIO_InitStruct.Pin = HARD_BSPD_Pin;
+  /*Configure GPIO pin : CARD_DETECT_Pin */
+  GPIO_InitStruct.Pin = CARD_DETECT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(HARD_BSPD_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : CARD_DETECT_Pin EXTRA_SENS2_Pin */
-  GPIO_InitStruct.Pin = CARD_DETECT_Pin|EXTRA_SENS2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : BUZZER_Pin */
-  GPIO_InitStruct.Pin = BUZZER_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(BUZZER_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(CARD_DETECT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : HEARTBEAT_Pin */
   GPIO_InitStruct.Pin = HEARTBEAT_Pin;
@@ -991,19 +724,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(HEARTBEAT_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : SHORTED_TO_PB11_Pin SHORTED_TO_PB10_Pin */
-  GPIO_InitStruct.Pin = SHORTED_TO_PB11_Pin|SHORTED_TO_PB10_Pin;
+  /*Configure GPIO pins : GPIO2_3V3_Pin GPIO1_3V3_Pin */
+  GPIO_InitStruct.Pin = GPIO2_3V3_Pin|GPIO1_3V3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : BUTTON_4_Pin BUTTON_3_Pin BUTTON_2_Pin BUTTON_1_Pin
-                           HV_REQUEST_Pin DRIVE_REQUEST_Pin */
-  GPIO_InitStruct.Pin = BUTTON_4_Pin|BUTTON_3_Pin|BUTTON_2_Pin|BUTTON_1_Pin
-                          |HV_REQUEST_Pin|DRIVE_REQUEST_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
   /*Configure GPIO pin : GASP_INTERRUPT_Pin */
   GPIO_InitStruct.Pin = GASP_INTERRUPT_Pin;
@@ -1033,36 +758,11 @@ static void MX_GPIO_Init(void)
 void MainEntry(void *argument)
 {
   /* USER CODE BEGIN 5 */
-	uint32_t precharge_tick_start = 0;
-	init_sensors();
 
-	Display_Init();
-	Display_Splashscreen();
-	osDelay(2000); // let their eyes bathe in the glory
-
-	Display_DriveTemplate();
-
-	if (HAL_TIM_Base_Start_IT(&htim7) != HAL_OK) {
-	  Error_Handler();
-	}
-	if (HAL_TIM_Base_Start_IT(&htim1) != HAL_OK) {
-	  Error_Handler();
-	}
-	if (HAL_TIM_Base_Start_IT(&htim4) != HAL_OK) {
-	  Error_Handler();
-	}
-
-	WheelSpeedPW_Init(&front_right_wheel_speed_t, &htim1, TIM_CHANNEL_1);
-	WheelSpeed_Init(&front_left_wheel_speed_t, &htim4);
   /* Infinite loop */
   for(;;)
   {
 
-	// driver input
-	driver_input_update();
-
-	// display
-	Display_Update();
 
 	// send data to ESP32
 	telem_send();
@@ -1070,228 +770,9 @@ void MainEntry(void *argument)
 
 
 
-	//char sstr[100];
-	//	  sprintf(sstr, "apps1: %d, apps2: %d, bse: %d      ", throttle1.percent, throttle2.percent, brake.percent);
-	//	  UG_PutString(5, 250, sstr);
-
-	update_sensor_vals(&hadc1, &hadc3);
-
-	/*
-	 * T.4.2.5 in FSAE 2022 rulebook
-	 * If an implausibility occurs between the values of the APPSs and
-	 * persists for more than 100 msec, the power to the Motor(s) must
-	 * be immediately stopped completely.
-	 *
-	 * It is not necessary to Open the Shutdown Circuit, the motor
-	 * controller(s) stopping the power to the Motor(s) is sufficient.
-	 */
-	if (has_discrepancy()) {
-		discrepancy_timer_ms += TMR1_PERIOD_MS;
-		if (discrepancy_timer_ms > MAX_DISCREPANCY_MS && state == DRIVE) {
-			report_fault(SENSOR_DISCREPANCY);
-		}
-	} else {
-		discrepancy_timer_ms = 0;
-	}
-
-	// Transmit CAN messages
-	can_tx_vcu_state(&hcan1);
-	can_tx_torque_request(&hcan1);
-
-	// update front wheel speeds
-	front_right_wheel_speed = WheelSpeedPW_GetCPS(&front_right_wheel_speed_t);
-	front_left_wheel_speed = WheelSpeed_GetCPS(&front_left_wheel_speed_t);
-
-	// strain gauge
-	//sg_adc = get_adc_conversion(&hadc1, STRAIN_GAUGE);
-//	telem_id = 2;
-	//can_tx_sg(&hcan1, sg_adc);
-
-	//sprintf(sstr, "fsg: %u, rsg: %u", sg_adc, sg_rear);
-	//UG_PutString(5, 250, sstr);
-
-	// traction control
-	if (is_button_enabled(TC_BUTTON)) {
-		traction_control_PID(front_right_wheel_speed, front_left_wheel_speed);
-	}
-
-	// If shutdown circuit opens in any state
-	if (!shutdown_closed()) {
-		report_fault(SHUTDOWN_CIRCUIT_OPEN);
-	}
-
-	//if hard BSPD trips in any state
-	if (!HAL_GPIO_ReadPin(HARD_BSPD_GPIO_Port, HARD_BSPD_Pin)) {
-	  report_fault(HARD_BSPD);
-	}
-
-	if (mc_fault) {
-	  report_fault(MC_FAULT);
-	}
-
-//	if (mc_fault) {
-//		can_clear_MC_fault(&hcan1);
-//	//  if (mc_fault_clear_success) {
-//		// init_fault_cleared = 1;
-//	//  }
-//	}
-
 	Xsens_Update(&huart4);
 
-	switch (state) {
-		case LV:
-			run_calibration();
 
-			// check if APPS pedal was calibrated
-			if(!sensors_calibrated()){
-				report_fault(UNCALIBRATED);
-				break;
-			}
-
-			if (is_switch_on(HV_SWITCH)) {
-				add_apps_deadzone();
-				precharge_tick_start = HAL_GetTick();
-				change_state(PRECHARGING);
-				break;
-			}
-
-			break;
-		case PRECHARGING:
-			// Driver turned off HV via button
-			if (!is_switch_on(HV_SWITCH)) {
-				change_state(LV);
-				break;
-			}
-
-			if((HAL_GetTick() - precharge_tick_start) > PRECHARGE_TIMEOUT_MS){
-				report_fault(PRECHARGE_TIMEOUT);
-				break;
-			}
-
-		  // if main AIRs closed
-			if ((shutdown_flags & 0b110) == 0b110) {
-				// Finished charging to HV on time
-				change_state(HV_ENABLED);
-				break;
-			}
-
-			break;
-		case HV_ENABLED:
-			// driver turned off HV
-			if (!is_switch_on(HV_SWITCH)) {// || capacitor_volt < PRECHARGE_THRESHOLD) { // don't really need volt check by rules
-				change_state(LV);
-				break;
-			}
-
-			// driver attempt to go to drive mode
-			if (is_switch_on(DRIVE_SWITCH)) {
-				if (brake_mashed()) {
-					change_state(DRIVE);
-				}
-				else {
-					// driver didn't press brake
-					report_fault(BRAKE_NOT_PRESSED);
-				}
-			}
-
-			break;
-		case DRIVE:
-			// driver turned off drive
-			if (!is_switch_on(DRIVE_SWITCH)) {
-				change_state(HV_ENABLED);
-				break;
-			}
-
-			if (!is_switch_on(HV_SWITCH)) {// || capacitor_volt < PRECHARGE_THRESHOLD) { // don't really need volt check by rules
-				// driver turned off HV
-				change_state(LV);
-				break;
-			}
-
-			if (is_brake_implausible()) {
-				report_fault(BRAKE_IMPLAUSIBLE);
-			}
-
-			break;
-		case FAULT:
-			switch (error) {
-				case BRAKE_NOT_PRESSED:
-					if (!is_switch_on(HV_SWITCH)){
-						change_state(LV);
-						break;
-					}
-
-					if (!is_switch_on(DRIVE_SWITCH)) {
-						// reset drive switch and try again
-						change_state(HV_ENABLED);
-					}
-					break;
-				case SENSOR_DISCREPANCY:
-					// stop power to motors if discrepancy persists for >100ms
-					// see rule T.4.2.5 in FSAE 2022 rulebook
-					if (!is_switch_on(DRIVE_SWITCH)) {
-						discrepancy_timer_ms = 0;
-						change_state(HV_ENABLED);
-					}
-
-					if (!is_switch_on(HV_SWITCH))
-						change_state(LV);
-
-					break;
-				case BRAKE_IMPLAUSIBLE:
-					if (!is_switch_on(HV_SWITCH)){
-						change_state(LV);
-						break;
-					}
-
-					if (!is_switch_on(DRIVE_SWITCH)){
-						change_state(HV_ENABLED);
-						break;
-					}
-
-					if (!is_brake_implausible()){
-						change_state(DRIVE);
-						break;
-					}
-
-					break;
-				case SHUTDOWN_CIRCUIT_OPEN:
-					if (shutdown_closed()) {
-						change_state(LV); // change to startup so we don't instantly request precharge
-					}
-					break;
-				case HARD_BSPD:
-				  //should not be recoverable, but let hardware decide this
-				  if (!HAL_GPIO_ReadPin(HARD_BSPD_GPIO_Port, HARD_BSPD_Pin)) {
-					  change_state(LV);
-				  }
-					break;
-
-				case UNCALIBRATED:
-					run_calibration();
-
-					// check if APPS pedal was calibrated
-					if(sensors_calibrated()){
-						change_state(LV); // change to startup so we don't instantly request precharge
-						break;
-					}
-					break;
-				case MC_FAULT:
-					if (!mc_fault) {
-						change_state(LV);
-					}
-					break;
-				case PRECHARGE_TIMEOUT:
-					// give time for fault message to show on display before going to LV
-					if ((HAL_GetTick() - precharge_tick_start) > PRECHARGE_TIMEOUT_MS+1000) {
-						change_state(LV);
-					}
-					break;
-				default:
-					break;
-			}
-		break;
-	  }
 
 	//HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);
 	osDelay(10);
@@ -1367,7 +848,7 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
-	  UG_PutString(5, 250, "HAL ERROR");
+
   }
   /* USER CODE END Error_Handler_Debug */
 }

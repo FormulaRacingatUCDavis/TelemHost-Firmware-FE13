@@ -21,9 +21,6 @@ extern FIL SDFile;
 static char buffer[BUFLEN];
 static uint32_t buffer_size = 0;
 
-static SemaphoreHandle_t sd_mutex = NULL;
-static StaticSemaphore_t sd_mutex_buffer;
-
 static uint32_t writes_since_flush = 0;
 
 /*
@@ -43,11 +40,6 @@ static void sd_card_write_from_buffer(void);
 static void sd_card_write_data_bytes(uint8_t* bytes, uint32_t count);
 
 sd_card_mount_result_t sd_card_mount(void) {
-	sd_mutex = sd_mutex ? sd_mutex : xSemaphoreCreateMutexStatic(&sd_mutex_buffer);
-	if (!sd_mutex)
-		return SD_CARD_MOUNT_RESULT_FAILED;
-
-	xSemaphoreTake(sd_mutex, portMAX_DELAY);
 	FRESULT res = f_mount(&SDFatFS, (TCHAR const*)SDPath, 1);
 	if (res == FR_OK) {
 		char filename[20];
@@ -85,15 +77,11 @@ sd_card_mount_result_t sd_card_mount(void) {
 		 }
 	}
 
-	xSemaphoreGive(sd_mutex);
-
 	return (res == FR_OK) ? SD_CARD_MOUNT_RESULT_SUCCESS : SD_CARD_MOUNT_RESULT_FAILED;
 }
 
 void sd_card_write_data(uint32_t id, uint8_t data[]) {
 	uint32_t tick;
-
-	xSemaphoreTake(sd_mutex, portMAX_DELAY);
 
 	// make sure we don't reach the end of the buffer
 	if ((buffer_size + ENTRY_SIZE) >= BUFLEN) {
@@ -118,8 +106,6 @@ void sd_card_write_data(uint32_t id, uint8_t data[]) {
 	buffer[buffer_size + 15] = (tick >> 24) & 0xFF;
 
 	buffer_size += ENTRY_SIZE;
-
-	xSemaphoreGive(sd_mutex);
 }
 
 void sd_card_write_can_rx(CAN_RxHeaderTypeDef rxHeader, uint8_t rxData[]) {
@@ -131,32 +117,22 @@ void sd_card_write_can_tx(CAN_TxHeaderTypeDef txHeader, uint8_t txData[]) {
 }
 
 void sd_card_update_sync(void) {
-	xSemaphoreTake(sd_mutex, portMAX_DELAY);
-
 	sd_card_write_from_buffer();
 	sd_card_flush_internal();
-
-	xSemaphoreGive(sd_mutex);
 }
 
 void sd_card_update_async(void) {
-	xSemaphoreTake(sd_mutex, portMAX_DELAY);
-
 	sd_card_write_from_buffer();
 
 	/* If we've gone too long without syncing, force a flush */
 	if (writes_since_flush == MAX_ASYNC_WRITES) {
 		sd_card_flush_internal();
 	}
-
-	xSemaphoreGive(sd_mutex);
 }
 
 /* Public variant, locks mutex */
 void sd_card_flush(void) {
-	xSemaphoreTake(sd_mutex, portMAX_DELAY);
 	sd_card_flush_internal();
-	xSemaphoreGive(sd_mutex);
 }
 
 /* Only to be used if mutex is active. */

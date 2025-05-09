@@ -37,6 +37,9 @@ void telem_send(void) {
 			default:
 				return;
 		}
+		// TODO remove, temp testing
+		p.data[0]= 99;
+
 		HAL_StatusTypeDef v = HAL_UART_Transmit(&huart7, (uint8_t*)&p, PACKET_LENGTH, 1000);
 		telem_id = !telem_id;
 		prev_time = send_time;

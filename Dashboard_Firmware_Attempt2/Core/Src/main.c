@@ -768,7 +768,7 @@ void MainEntry(void *argument)
 	telem_send();
 	//write_rx_to_sd();
 
-
+	print("hello!\n");
 
 	Xsens_Update(&huart4);
 

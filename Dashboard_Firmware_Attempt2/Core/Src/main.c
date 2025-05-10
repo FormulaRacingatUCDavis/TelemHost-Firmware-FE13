@@ -211,7 +211,7 @@ int main(void)
   DashboardMainHandle = osThreadNew(MainEntry, NULL, &DashboardMain_attributes);
 
   /* creation of SDCard */
-  SDCardHandle = osThreadNew(SDCardEntry, NULL, &SDCard_attributes);
+  // SDCardHandle = osThreadNew(SDCardEntry, NULL, &SDCard_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -765,12 +765,24 @@ void MainEntry(void *argument)
 
 
 	// send data to ESP32
-	telem_send();
+	//telem_send();
 	//write_rx_to_sd();
 
-	print("hello!\n");
+//	uint8_t test_data[8];
+//	test_data[0] = 1;
+//	test_data[1] = 2;
+//	test_data[2] = 3;
+//	test_data[3] = 4;
+//	test_data[4] = 5;
+//	test_data[5] = 6;
+//	test_data[6] = 7;
+//	test_data[7] = 8;
+//	CAN_Send(&hcan1, 0x0f, test_data, 8); //TODO REMOVE LATER
+//	CAN_Send(&hcan2, 0x0f, test_data, 8);
 
-	Xsens_Update(&huart4);
+	print("USB alive!\n");
+
+	//Xsens_Update(&huart4);
 
 
 

@@ -9,6 +9,7 @@ uint32_t send_time;
 uint32_t prev_time = 0;
 
 extern UART_HandleTypeDef huart7;
+extern UART_HandleTypeDef huart3;
 
 extern uint16_t sg_adc;
 
@@ -40,7 +41,10 @@ void telem_send(void) {
 		// TODO remove, temp testing
 		p.data[0]= 99;
 
-		HAL_StatusTypeDef v = HAL_UART_Transmit(&huart7, (uint8_t*)&p, PACKET_LENGTH, 1000);
+		// send packet to ESP32 (uart7)
+		HAL_StatusTypeDef esp_uart_status = HAL_UART_Transmit(&huart7, (uint8_t*)&p, PACKET_LENGTH, 1000);
+		// send packet to usb as well (usart3)
+		HAL_StatusTypeDef usb_uart_status = HAL_UART_Transmit(&huart3, (uint8_t*)&p, PACKET_LENGTH, 1000);
 		telem_id = !telem_id;
 		prev_time = send_time;
 	}

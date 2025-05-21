@@ -7,7 +7,6 @@
 
 #include "sd_card.h"
 #include "stdio.h"
-#include "semphr.h"
 #include "string.h"
 
 #define BUFLEN 8192

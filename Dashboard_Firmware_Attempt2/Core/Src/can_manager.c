@@ -46,6 +46,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
 static void save_can_rx_data(CAN_RxHeaderTypeDef rxHeader, uint8_t rxData[]) {
     // gets message and updates values
+	sd_card_write_can_rx(rxHeader, rxData);  // TODO REMOVE
 	switch (rxHeader.StdId) {
 		case BMS_STATUS_MSG:
 			bms_status = rxData[0];

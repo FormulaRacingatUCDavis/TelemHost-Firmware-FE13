@@ -768,26 +768,26 @@ void MainEntry(void *argument)
 	telem_send();
 	//write_rx_to_sd();
 
-	// uint8_t test_data[8];
-	// test_data[0] = 1;
-	// test_data[1] = 2;
-	// test_data[2] = 3;
-	// test_data[3] = 4;
-	// test_data[4] = 5;
-	// test_data[5] = 6;
-	// test_data[6] = 7;
-	// test_data[7] = 8;
-	// CAN_Send(&hcan1, 0x0f, test_data, 8); //TODO REMOVE LATER
-	// CAN_Send(&hcan2, 0x0f, test_data, 8);
+	 uint8_t test_data[8];
+	 test_data[0] = 1;
+	 test_data[1] = 2;
+	 test_data[2] = 3;
+	 test_data[3] = 4;
+	 test_data[4] = 5;
+	 test_data[5] = 6;
+	 test_data[6] = 7;
+	 test_data[7] = 8;
+	 CAN_Send(&hcan1, 0x0f, test_data, 8); //TODO REMOVE LATER
+	 CAN_Send(&hcan2, 0x0f, test_data, 8);
+	 HAL_Delay(100);
 
 	print("USB alive!\n");
 
 	//Xsens_Update(&huart4);
 
+	osDelay(5);
 
-
-	HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);
-	osDelay(10);
+//	HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);
   }
 
   // In case we accidentally leave the infinite loop
@@ -815,9 +815,10 @@ void SDCardEntry(void *argument)
 	/* Infinite loop */
 	while (1)
 	{
-		osDelay(3);
-		uint8_t d[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-		sd_card_write_data(0x1337c0de, d);
+		osDelay(5);
+		HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);
+//		uint8_t d[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+//		sd_card_write_data(0x1337c0de, d);
 		// sd_card_write_sync();
 		sd_card_update_async();
 	}

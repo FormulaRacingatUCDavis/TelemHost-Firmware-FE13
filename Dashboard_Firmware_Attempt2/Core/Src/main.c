@@ -654,7 +654,8 @@ static void MX_USART3_UART_Init(void)
   huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart3.Init.OverSampling = UART_OVERSAMPLING_16;
   huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_SWAP_INIT;
+  huart3.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
   if (HAL_UART_Init(&huart3) != HAL_OK)
   {
     Error_Handler();
@@ -779,14 +780,14 @@ void MainEntry(void *argument)
 	 test_data[7] = 8;
 	 CAN_Send(&hcan1, 0x0f, test_data, 8); //TODO REMOVE LATER
 	 CAN_Send(&hcan2, 0x0f, test_data, 8);
-	 HAL_Delay(100);
+	 HAL_Delay(10);
 
-	print("USB alive!\n");
+	//print("USB alive!\n");
+	HAL_UART_Transmit(&huart3, test_data, 8, 1000);
 
 	//Xsens_Update(&huart4);
 
-	osDelay(5);
-
+	osDelay(10);
 //	HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);
   }
 

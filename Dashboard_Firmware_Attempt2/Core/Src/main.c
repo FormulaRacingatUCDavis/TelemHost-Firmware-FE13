@@ -393,6 +393,10 @@ static void MX_CAN2_Init(void)
   }
   /* USER CODE BEGIN CAN2_Init 2 */
 
+  if (HAL_CAN_Start(&hcan2) != HAL_OK) {
+	  Error_Handler();
+  }
+
   /* USER CODE END CAN2_Init 2 */
 
 }
@@ -788,7 +792,7 @@ void MainEntry(void *argument)
 	//Xsens_Update(&huart4);
 
 	osDelay(10);
-//	HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);
+	HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);
   }
 
   // In case we accidentally leave the infinite loop

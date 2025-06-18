@@ -1,0 +1,4 @@
+../Core/Src/xsens/xsens_utility.c:5:10:xsens_coalesce_16BE_16LE	1
+../Core/Src/xsens/xsens_utility.c:10:10:xsens_coalesce_32BE_32LE	1
+../Core/Src/xsens/xsens_utility.c:18:7:xsens_coalesce_32BE_F32LE	1
+../Core/Src/xsens/xsens_utility.c:31:6:xsens_quaternion_to_euler	2

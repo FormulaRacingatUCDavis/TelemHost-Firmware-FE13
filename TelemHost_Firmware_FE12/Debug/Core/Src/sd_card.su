@@ -1,0 +1,10 @@
+../Core/Src/sd_card.c:41:24:sd_card_mount	4184	static
+../Core/Src/sd_card.c:82:6:sd_card_write_data	24	static
+../Core/Src/sd_card.c:110:6:sd_card_write_can_rx	8	static
+../Core/Src/sd_card.c:114:6:sd_card_write_can_tx	8	static
+../Core/Src/sd_card.c:118:6:sd_card_update_sync	8	static
+../Core/Src/sd_card.c:123:6:sd_card_update_async	8	static
+../Core/Src/sd_card.c:133:6:sd_card_flush	8	static
+../Core/Src/sd_card.c:138:13:sd_card_flush_internal	8	static
+../Core/Src/sd_card.c:143:13:sd_card_write_data_bytes	16	static
+../Core/Src/sd_card.c:153:13:sd_card_write_from_buffer	8	static

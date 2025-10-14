@@ -524,39 +524,39 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 
   /* USER CODE END UART4_MspInit 1 */
   }
-  else if(huart->Instance==UART7)
+  else if(huart->Instance==USART2)
   {
-  /* USER CODE BEGIN UART7_MspInit 0 */
+  /* USER CODE BEGIN USART2_MspInit 0 */
 
-  /* USER CODE END UART7_MspInit 0 */
+  /* USER CODE END USART2_MspInit 0 */
 
   /** Initializes the peripherals clock
   */
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_UART7;
-    PeriphClkInitStruct.Uart7ClockSelection = RCC_UART7CLKSOURCE_PCLK1;
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2;
+    PeriphClkInitStruct.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
       Error_Handler();
     }
 
     /* Peripheral clock enable */
-    __HAL_RCC_UART7_CLK_ENABLE();
+    __HAL_RCC_USART2_CLK_ENABLE();
 
-    __HAL_RCC_GPIOF_CLK_ENABLE();
-    /**UART7 GPIO Configuration
-    PF6     ------> UART7_RX
-    PF7     ------> UART7_TX
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    /**USART2 GPIO Configuration
+    PD5     ------> USART2_TX
+    PD6     ------> USART2_RX
     */
-    GPIO_InitStruct.Pin = ESP32_UART_RX_Pin|ESP32_UART_TX_Pin;
+    GPIO_InitStruct.Pin = XSENS_UART_TXD5_Pin|XSENS_UART_RXD6_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF8_UART7;
-    HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /* USER CODE BEGIN UART7_MspInit 1 */
+  /* USER CODE BEGIN USART2_MspInit 1 */
 
-  /* USER CODE END UART7_MspInit 1 */
+  /* USER CODE END USART2_MspInit 1 */
   }
   else if(huart->Instance==USART3)
   {
@@ -623,23 +623,23 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 
   /* USER CODE END UART4_MspDeInit 1 */
   }
-  else if(huart->Instance==UART7)
+  else if(huart->Instance==USART2)
   {
-  /* USER CODE BEGIN UART7_MspDeInit 0 */
+  /* USER CODE BEGIN USART2_MspDeInit 0 */
 
-  /* USER CODE END UART7_MspDeInit 0 */
+  /* USER CODE END USART2_MspDeInit 0 */
     /* Peripheral clock disable */
-    __HAL_RCC_UART7_CLK_DISABLE();
+    __HAL_RCC_USART2_CLK_DISABLE();
 
-    /**UART7 GPIO Configuration
-    PF6     ------> UART7_RX
-    PF7     ------> UART7_TX
+    /**USART2 GPIO Configuration
+    PD5     ------> USART2_TX
+    PD6     ------> USART2_RX
     */
-    HAL_GPIO_DeInit(GPIOF, ESP32_UART_RX_Pin|ESP32_UART_TX_Pin);
+    HAL_GPIO_DeInit(GPIOD, XSENS_UART_TXD5_Pin|XSENS_UART_RXD6_Pin);
 
-  /* USER CODE BEGIN UART7_MspDeInit 1 */
+  /* USER CODE BEGIN USART2_MspDeInit 1 */
 
-  /* USER CODE END UART7_MspDeInit 1 */
+  /* USER CODE END USART2_MspDeInit 1 */
   }
   else if(huart->Instance==USART3)
   {

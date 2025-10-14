@@ -66,7 +66,7 @@ TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim7;
 
 UART_HandleTypeDef huart4;
-UART_HandleTypeDef huart7;
+UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_uart4_rx;
 
@@ -101,11 +101,11 @@ static void MX_CAN2_Init(void);
 static void MX_SDMMC1_SD_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_UART4_Init(void);
-static void MX_UART7_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_TIM7_Init(void);
 static void MX_TIM1_Init(void);
+static void MX_USART2_UART_Init(void);
 void MainEntry(void *argument);
 void SDCardEntry(void *argument);
 
@@ -175,12 +175,12 @@ int main(void)
   MX_SDMMC1_SD_Init();
   MX_TIM4_Init();
   MX_UART4_Init();
-  MX_UART7_Init();
   MX_CAN1_Init();
   MX_USART3_UART_Init();
   MX_TIM7_Init();
   MX_FATFS_Init();
   MX_TIM1_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
 //  mount_sd_card();
@@ -600,37 +600,37 @@ static void MX_UART4_Init(void)
 }
 
 /**
-  * @brief UART7 Initialization Function
+  * @brief USART2 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_UART7_Init(void)
+static void MX_USART2_UART_Init(void)
 {
 
-  /* USER CODE BEGIN UART7_Init 0 */
+  /* USER CODE BEGIN USART2_Init 0 */
 
-  /* USER CODE END UART7_Init 0 */
+  /* USER CODE END USART2_Init 0 */
 
-  /* USER CODE BEGIN UART7_Init 1 */
+  /* USER CODE BEGIN USART2_Init 1 */
 
-  /* USER CODE END UART7_Init 1 */
-  huart7.Instance = UART7;
-  huart7.Init.BaudRate = 115200;
-  huart7.Init.WordLength = UART_WORDLENGTH_8B;
-  huart7.Init.StopBits = UART_STOPBITS_1;
-  huart7.Init.Parity = UART_PARITY_NONE;
-  huart7.Init.Mode = UART_MODE_TX_RX;
-  huart7.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart7.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart7.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart7.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart7) != HAL_OK)
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN UART7_Init 2 */
+  /* USER CODE BEGIN USART2_Init 2 */
 
-  /* USER CODE END UART7_Init 2 */
+  /* USER CODE END USART2_Init 2 */
 
 }
 
@@ -714,13 +714,23 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOF, GPIO1_3V3_Pin|GPIO2_3v3_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : CARD_DETECT_Pin */
-  GPIO_InitStruct.Pin = CARD_DETECT_Pin;
+  /*Configure GPIO pins : CARD_DETECT_Pin MON_12V_Pin */
+  GPIO_InitStruct.Pin = CARD_DETECT_Pin|MON_12V_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(CARD_DETECT_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : GPIO1_3V3_Pin GPIO2_3v3_Pin */
+  GPIO_InitStruct.Pin = GPIO1_3V3_Pin|GPIO2_3v3_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
   /*Configure GPIO pin : HEARTBEAT_Pin */
   GPIO_InitStruct.Pin = HEARTBEAT_Pin;
@@ -728,12 +738,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(HEARTBEAT_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : GPIO2_3V3_Pin GPIO1_3V3_Pin */
-  GPIO_InitStruct.Pin = GPIO2_3V3_Pin|GPIO1_3V3_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : GASP_INTERRUPT_Pin */
   GPIO_InitStruct.Pin = GASP_INTERRUPT_Pin;

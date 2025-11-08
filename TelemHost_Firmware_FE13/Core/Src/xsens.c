@@ -128,7 +128,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
         case XSENS_EVT_FREE_ACCELERATION:
           if(mtdata->type == XSENS_EVT_TYPE_FLOAT3)
             {
-        	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+
 			int16_t acc_x = (int16_t)(mtdata->data.f4x3[0] * 100);
 			int16_t acc_y = (int16_t)(mtdata->data.f4x3[1] * 100);
 			int16_t acc_z = (int16_t)(mtdata->data.f4x3[2] * 100);
@@ -141,17 +141,149 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 			data[4] = HI8(acc_z);
 			data[5] = LO8(acc_z);
 
-			//CAN_Send(&hcan1, 0x101, data, 6);
+
 			sd_card_write_data(0xA100, data);
             }
             break;
 
-        case XSENS_EVT_LAT_LON:
-        	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
-        	break;
 
-        default:
-        	// IGNORE
-        	break;
-    }
+
+
+        case XSENS_EVT_STATUS_BYTE:
+                if (mtdata->type == XSENS_EVT_TYPE_U8)
+                {
+                    uint8_t status_byte = mtdata->data.u1;
+                    uint8_t data[8] = {0};
+
+                    data[0] = status_byte;
+
+                    sd_card_write_data(0x120, data);
+                }
+                break;
+
+            case XSENS_EVT_STATUS_WORD:
+                if (mtdata->type == XSENS_EVT_TYPE_U32)
+                {
+                    uint32_t status_word = mtdata->data.u4;
+                    uint8_t data[8] = {0};
+
+                    data[0] = (status_word >> 24) & 0xFF;
+                    data[1] = (status_word>> 16) & 0xFF;
+                    data[2] = (status_word >> 8)  & 0xFF;
+                    data[3] = (status_word >> 0)  & 0xFF;
+
+                    sd_card_write_data(0x121, data);
+                }
+                break;
+
+            case XSENS_EVT_DEVICE_ID:
+                if (mtdata->type == XSENS_EVT_TYPE_U32)
+                {
+                    uint32_t dev_id = mtdata->data.u4;
+                    uint8_t data[8] = {0};
+
+                    data[0] = (dev_id >> 24) & 0xFF;
+                    data[1] = (dev_id >> 16) & 0xFF;
+                    data[2] = (dev_id >> 8)  & 0xFF;
+                    data[3] = (dev_id >> 0)  & 0xFF;
+
+                    sd_card_write_data(0x122, data);
+                }
+                break;
+
+            case XSENS_EVT_LOCATION_ID:
+                if (mtdata->type == XSENS_EVT_TYPE_U16)
+                {
+                    uint16_t location = mtdata->data.u2;
+                    uint8_t data[8] = {0};
+
+                    data[0] = HI8(location);
+                    data[1] = LO8(location);
+
+                    sd_card_write_data(0x123, data);
+                }
+                break;
+
+            case XSENS_EVT_POSITION_ECEF:
+                if(mtdata->type == XSENS_EVT_TYPE_FLOAT3)
+                {
+                    uint8_t data[12] = {0};
+                    memcpy(data, mtdata->data.f4x3, 12);
+
+                    sd_card_write_data(0x124, data);
+                }
+    			int16_t ecef_x = (int16_t)(mtdata->data.f4x3[0] * 100);
+    			int16_t ecef_y = (int16_t)(mtdata->data.f4x3[1] * 100);
+    			int16_t ecef_z = (int16_t)(mtdata->data.f4x3[2] * 100);
+
+    			uint8_t data[8] = {0};
+    			data[0] = HI8(ecef_x);
+    			data[1] = LO8(ecef_x);
+    			data[2] = HI8(ecef_y);
+    			data[3] = LO8(ecef_y);
+    			data[4] = HI8(ecef_z);
+    			data[5] = LO8(ecef_z);
+
+
+    			sd_card_write_data(0xA100, data);
+                break;
+
+            case XSENS_EVT_LAT_LON:
+                if (mtdata->type == XSENS_EVT_TYPE_FLOAT2)
+                {
+                    int32_t lat = (int32_t)(mtdata->data.f4x2[0] * 100);
+                    int32_t lon = (int32_t)(mtdata->data.f4x2[1] * 100);
+                    uint8_t data[8] = {0};
+
+                    data[0] = (lat >> 24) & 0xFF;
+                    data[1] = (lat >> 16) & 0xFF;
+                    data[2] = (lat >> 8)  & 0xFF;
+                    data[3] = (lat >> 0)  & 0xFF;
+
+                    data[4] = (lon >> 24) & 0xFF;
+                    data[5] = (lon >> 16) & 0xFF;
+                    data[6] = (lon >> 8)  & 0xFF;
+                    data[7] = (lon >> 0)  & 0xFF;
+                    sd_card_write_data(0x125, data);
+                }
+                break;
+
+            case XSENS_EVT_ALTITUDE_ELLIPSOID:
+                if (mtdata->type == XSENS_EVT_TYPE_FLOAT)
+                {
+                    int16_t alt = (int16_t)(mtdata->data.f4 * 100);
+                    uint8_t data[8] = {0};
+
+                    data[0] = HI8(alt);
+                    data[1] = LO8(alt);
+
+                    sd_card_write_data(0x126, data);
+                }
+                break;
+
+            case XSENS_EVT_VELOCITY_XYZ:
+                if (mtdata->type == XSENS_EVT_TYPE_FLOAT3)
+                {
+                    int16_t vel_x = (int16_t)(mtdata->data.f4x3[0] * 100);
+                    int16_t vel_y = (int16_t)(mtdata->data.f4x3[1] * 100);
+                    int16_t vel_z = (int16_t)(mtdata->data.f4x3[2] * 100);
+                    uint8_t data[8] = {0};
+
+                    data[0] = HI8(vel_x);
+                    data[1] = LO8(vel_x);
+                    data[2] = HI8(vel_y);
+                    data[3] = LO8(vel_y);
+                    data[4] = HI8(vel_z);
+                    data[5] = LO8(vel_z);
+
+                    sd_card_write_data(0x127, data);
+                }
+                break;
+
+            default:
+                break;
 }
+}
+
+
+

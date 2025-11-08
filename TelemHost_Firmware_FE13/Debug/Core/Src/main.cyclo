@@ -1,25 +1,4 @@
 ../Drivers/CMSIS/Include/core_cm7.h:1896:22:__NVIC_EnableIRQ	2
-<<<<<<< HEAD
-../Core/Src/main.c:119:9:shutdown_closed	2
-../Core/Src/main.c:124:6:HAL_GPIO_EXTI_Callback	1
-../Core/Src/main.c:148:5:main	1
-../Core/Src/main.c:244:6:SystemClock_Config	4
-../Core/Src/main.c:297:13:MX_CAN1_Init	5
-../Core/Src/main.c:368:13:MX_CAN2_Init	3
-../Core/Src/main.c:409:13:MX_SDMMC1_SD_Init	2
-../Core/Src/main.c:440:13:MX_TIM1_Init	4
-../Core/Src/main.c:487:13:MX_TIM4_Init	4
-../Core/Src/main.c:533:13:MX_TIM7_Init	3
-../Core/Src/main.c:572:13:MX_UART4_Init	2
-../Core/Src/main.c:607:13:MX_USART2_UART_Init	2
-../Core/Src/main.c:642:13:MX_USART3_UART_Init	2
-../Core/Src/main.c:676:13:MX_DMA_Init	1
-../Core/Src/main.c:701:13:MX_GPIO_Init	1
-../Core/Src/main.c:767:6:MainEntry	1
-../Core/Src/main.c:815:6:SDCardEntry	2
-../Core/Src/main.c:851:6:HAL_TIM_PeriodElapsedCallback	2
-../Core/Src/main.c:870:6:Error_Handler	1
-=======
 ../Core/Src/main.c:138:9:shutdown_closed	2
 ../Core/Src/main.c:143:6:HAL_GPIO_EXTI_Callback	1
 ../Core/Src/main.c:162:5:main	1
@@ -39,4 +18,3 @@
 ../Core/Src/main.c:846:6:SDCardEntry	2
 ../Core/Src/main.c:882:6:HAL_TIM_PeriodElapsedCallback	2
 ../Core/Src/main.c:901:6:Error_Handler	1
->>>>>>> b7fc09c232d999fba98e31bec14ff4b6cb35a183

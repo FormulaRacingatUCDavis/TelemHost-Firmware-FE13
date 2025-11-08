@@ -67,31 +67,29 @@ uint8_t traction_control_enable();
 #define GPIO1_3V3_GPIO_Port GPIOF
 #define GPIO2_3v3_Pin GPIO_PIN_10
 #define GPIO2_3v3_GPIO_Port GPIOF
-#define XSENS_UART_TX_Pin GPIO_PIN_0
-#define XSENS_UART_TX_GPIO_Port GPIOA
-#define XSENS_UART_RX_Pin GPIO_PIN_1
-#define XSENS_UART_RX_GPIO_Port GPIOA
+#define ETH_INT_Pin GPIO_PIN_0
+#define ETH_INT_GPIO_Port GPIOC
 #define HEARTBEAT_Pin GPIO_PIN_4
 #define HEARTBEAT_GPIO_Port GPIOA
-#define TCAN_RX_Pin GPIO_PIN_12
-#define TCAN_RX_GPIO_Port GPIOB
-#define TCAN_TX_Pin GPIO_PIN_13
-#define TCAN_TX_GPIO_Port GPIOB
 #define USB_UART_TX_Pin GPIO_PIN_8
 #define USB_UART_TX_GPIO_Port GPIOD
 #define USB_UART_RX_Pin GPIO_PIN_9
 #define USB_UART_RX_GPIO_Port GPIOD
-#define PCAN_RX_Pin GPIO_PIN_11
-#define PCAN_RX_GPIO_Port GPIOA
-#define PCAN_TX_Pin GPIO_PIN_12
-#define PCAN_TX_GPIO_Port GPIOA
-#define XSENS_UART_TXD5_Pin GPIO_PIN_5
-#define XSENS_UART_TXD5_GPIO_Port GPIOD
-#define XSENS_UART_RXD6_Pin GPIO_PIN_6
-#define XSENS_UART_RXD6_GPIO_Port GPIOD
+#define TCAN_RX_Pin GPIO_PIN_11
+#define TCAN_RX_GPIO_Port GPIOA
+#define TCAN_TX_Pin GPIO_PIN_12
+#define TCAN_TX_GPIO_Port GPIOA
+#define XSENS_UART_TX_Pin GPIO_PIN_5
+#define XSENS_UART_TX_GPIO_Port GPIOD
+#define XSENS_UART_RX_Pin GPIO_PIN_6
+#define XSENS_UART_RX_GPIO_Port GPIOD
 #define GASP_INTERRUPT_Pin GPIO_PIN_15
 #define GASP_INTERRUPT_GPIO_Port GPIOG
 #define GASP_INTERRUPT_EXTI_IRQn EXTI15_10_IRQn
+#define PCAN_RX_Pin GPIO_PIN_5
+#define PCAN_RX_GPIO_Port GPIOB
+#define PCAN_TX_Pin GPIO_PIN_6
+#define PCAN_TX_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

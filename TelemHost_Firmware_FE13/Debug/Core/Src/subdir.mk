@@ -20,7 +20,6 @@ C_SRCS += \
 ../Core/Src/sysmem.c \
 ../Core/Src/system_stm32f7xx.c \
 ../Core/Src/telem.c \
-../Core/Src/wheel_speed.c \
 ../Core/Src/xsens.c 
 
 OBJS += \
@@ -39,7 +38,6 @@ OBJS += \
 ./Core/Src/sysmem.o \
 ./Core/Src/system_stm32f7xx.o \
 ./Core/Src/telem.o \
-./Core/Src/wheel_speed.o \
 ./Core/Src/xsens.o 
 
 C_DEPS += \
@@ -58,7 +56,6 @@ C_DEPS += \
 ./Core/Src/sysmem.d \
 ./Core/Src/system_stm32f7xx.d \
 ./Core/Src/telem.d \
-./Core/Src/wheel_speed.d \
 ./Core/Src/xsens.d 
 
 
@@ -69,7 +66,7 @@ Core/Src/%.o Core/Src/%.su Core/Src/%.cyclo: ../Core/Src/%.c Core/Src/subdir.mk
 clean: clean-Core-2f-Src
 
 clean-Core-2f-Src:
-	-$(RM) ./Core/Src/can_manager.cyclo ./Core/Src/can_manager.d ./Core/Src/can_manager.o ./Core/Src/can_manager.su ./Core/Src/freertos.cyclo ./Core/Src/freertos.d ./Core/Src/freertos.o ./Core/Src/freertos.su ./Core/Src/fsm.cyclo ./Core/Src/fsm.d ./Core/Src/fsm.o ./Core/Src/fsm.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/sd_card.cyclo ./Core/Src/sd_card.d ./Core/Src/sd_card.o ./Core/Src/sd_card.su ./Core/Src/sensors.cyclo ./Core/Src/sensors.d ./Core/Src/sensors.o ./Core/Src/sensors.su ./Core/Src/serial.cyclo ./Core/Src/serial.d ./Core/Src/serial.o ./Core/Src/serial.su ./Core/Src/serial_print.cyclo ./Core/Src/serial_print.d ./Core/Src/serial_print.o ./Core/Src/serial_print.su ./Core/Src/stm32f7xx_hal_msp.cyclo ./Core/Src/stm32f7xx_hal_msp.d ./Core/Src/stm32f7xx_hal_msp.o ./Core/Src/stm32f7xx_hal_msp.su ./Core/Src/stm32f7xx_hal_timebase_tim.cyclo ./Core/Src/stm32f7xx_hal_timebase_tim.d ./Core/Src/stm32f7xx_hal_timebase_tim.o ./Core/Src/stm32f7xx_hal_timebase_tim.su ./Core/Src/stm32f7xx_it.cyclo ./Core/Src/stm32f7xx_it.d ./Core/Src/stm32f7xx_it.o ./Core/Src/stm32f7xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32f7xx.cyclo ./Core/Src/system_stm32f7xx.d ./Core/Src/system_stm32f7xx.o ./Core/Src/system_stm32f7xx.su ./Core/Src/telem.cyclo ./Core/Src/telem.d ./Core/Src/telem.o ./Core/Src/telem.su ./Core/Src/wheel_speed.cyclo ./Core/Src/wheel_speed.d ./Core/Src/wheel_speed.o ./Core/Src/wheel_speed.su ./Core/Src/xsens.cyclo ./Core/Src/xsens.d ./Core/Src/xsens.o ./Core/Src/xsens.su
+	-$(RM) ./Core/Src/can_manager.cyclo ./Core/Src/can_manager.d ./Core/Src/can_manager.o ./Core/Src/can_manager.su ./Core/Src/freertos.cyclo ./Core/Src/freertos.d ./Core/Src/freertos.o ./Core/Src/freertos.su ./Core/Src/fsm.cyclo ./Core/Src/fsm.d ./Core/Src/fsm.o ./Core/Src/fsm.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/sd_card.cyclo ./Core/Src/sd_card.d ./Core/Src/sd_card.o ./Core/Src/sd_card.su ./Core/Src/sensors.cyclo ./Core/Src/sensors.d ./Core/Src/sensors.o ./Core/Src/sensors.su ./Core/Src/serial.cyclo ./Core/Src/serial.d ./Core/Src/serial.o ./Core/Src/serial.su ./Core/Src/serial_print.cyclo ./Core/Src/serial_print.d ./Core/Src/serial_print.o ./Core/Src/serial_print.su ./Core/Src/stm32f7xx_hal_msp.cyclo ./Core/Src/stm32f7xx_hal_msp.d ./Core/Src/stm32f7xx_hal_msp.o ./Core/Src/stm32f7xx_hal_msp.su ./Core/Src/stm32f7xx_hal_timebase_tim.cyclo ./Core/Src/stm32f7xx_hal_timebase_tim.d ./Core/Src/stm32f7xx_hal_timebase_tim.o ./Core/Src/stm32f7xx_hal_timebase_tim.su ./Core/Src/stm32f7xx_it.cyclo ./Core/Src/stm32f7xx_it.d ./Core/Src/stm32f7xx_it.o ./Core/Src/stm32f7xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32f7xx.cyclo ./Core/Src/system_stm32f7xx.d ./Core/Src/system_stm32f7xx.o ./Core/Src/system_stm32f7xx.su ./Core/Src/telem.cyclo ./Core/Src/telem.d ./Core/Src/telem.o ./Core/Src/telem.su ./Core/Src/xsens.cyclo ./Core/Src/xsens.d ./Core/Src/xsens.o ./Core/Src/xsens.su
 
 .PHONY: clean-Core-2f-Src
 

@@ -1,2 +1,6 @@
 ../Core/Src/xsens.c:32:6:Xsens_Update	4
+<<<<<<< HEAD
 ../Core/Src/xsens.c:77:6:imu_callback	21
+=======
+../Core/Src/xsens.c:77:6:imu_callback	17
+>>>>>>> b7fc09c232d999fba98e31bec14ff4b6cb35a183

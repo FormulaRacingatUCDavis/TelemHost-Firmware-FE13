@@ -69,8 +69,8 @@ all: main-build
 main-build: TelemHost_Firmware_FE13.elf secondary-outputs
 
 # Tool invocations
-TelemHost_Firmware_FE13.elf TelemHost_Firmware_FE13.map: $(OBJS) $(USER_OBJS) C:\Users\hangt\Downloads\FRUCD\TelemHost-Firmware-FE13\TelemHost_Firmware_FE13\STM32F746ZGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "TelemHost_Firmware_FE13.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\hangt\Downloads\FRUCD\TelemHost-Firmware-FE13\TelemHost_Firmware_FE13\STM32F746ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="TelemHost_Firmware_FE13.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+TelemHost_Firmware_FE13.elf TelemHost_Firmware_FE13.map: $(OBJS) $(USER_OBJS) C:\Users\Anthony\ Yan\OneDrive\Documents\FRUCD_Firmware\TelemHost-Firmware-FE13\TelemHost_Firmware_FE13\STM32F746ZGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "TelemHost_Firmware_FE13.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\Anthony Yan\OneDrive\Documents\FRUCD_Firmware\TelemHost-Firmware-FE13\TelemHost_Firmware_FE13\STM32F746ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="TelemHost_Firmware_FE13.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

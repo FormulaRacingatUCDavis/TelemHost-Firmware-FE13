@@ -5,7 +5,7 @@
  *      Author: leoja
  */
 
-
+#include <string.h>
 #include "serial.h"
 #include "xsens/xsens_mti.h"      // Main xsens library
 #include "xsens/xsens_utility.h"  // Needed for quaternion conversion function
@@ -94,234 +94,311 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
 
-    switch (event) {
-
-    	case XSENS_EVT_TEMPERATURE: //temperature in celcius
-    		if (mtdata->type == XSENS_EVT_TYPE_FLOAT) {
-    			//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
-    			int16_t temp = (int16_t)(mtdata->data.f4 * 100);
-
-    			uint8_t data[8] = {0};
-    			data[0] = HI8(temp);
-    			data[1] = LO8(temp);
-
-    			//CAN_Send(&hcan1, 0x100, data, 6);
-    			sd_card_write_data(0x100, data);
-    		}
-    		break;
-
-    	//INCOMPLETE - Time is given in a type_none
-
-    	case XSENS_EVT_UTC_TIME:
-        	if (mtdata->type == XSENS_EVT_TYPE_NONE) {
-        			//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
-        			int16_t ang_x = (int16_t)mtdata->data.f4x3[0];
-        			int16_t ang_y = (int16_t)mtdata->data.f4x3[1];
-        			int16_t ang_z = (int16_t)mtdata->data.f4x3[2];
-
-        			//CAN_Send(&hcan1, 0x100, data, 6);
-        			sd_card_write_data(0x101, data);
-        		}
-        	break;
-
-    	case XSENS_EVT_PACKET_COUNT: // Number of packets, incremented per MTData2 message
-        	if (mtdata->type == XSENS_EVT_TYPE_U16) {
-        			//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
-        			int16_t pckt_cnt = mtdata->u2;
-
-        			uint8_t data[8] = {0};
-        			data[0] = HI8(pckt_cnt);
-        			data[1] = LO8(pckt_cnt);
-
-        			//CAN_Send(&hcan1, 0x100, data, 6);
-        			sd_card_write_data(0x102, data);
-        		}
-        	break;
-
-    	case XSENS_EVT_TIME_FINE: // Sample time in # of 10 kHz clock ticks
-    		if (mtdata->type == XSENS_EVT_TYPE_U32) {
-    			//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
-    			int16_t time_fine_high = mtdata->data.u4 >> 16;
-    			int16_t time_fine_low = mtdata->data.u4 & 0xFF;
-
-    			uint8_t data[8] = {0};
-
-    			data[0] = HI8(time_fine_high);
-    			data[1] = LO8(time_fine_high);
-    			data[2] = HI8(time_fine_low);
-    			data[3] = LO8(time_fine_low);
-
-    			//CAN_Send(&hcan1, 0x101, data, 6);
-    			sd_card_write_data(0x103, data);
-    		}
-    		break;
-
-    	case XSENS_EVT_TIME_COARSE: // Sample time in # of seconds
-    		if (mtdata->type == XSENS_EVT_TYPE_U3s2) {
-    			//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
-    			int16_t time_coarse_high = mtdata->data.u4 >> 16;
-    			int16_t time_corase_low = mtdata->data.u4 & 0xFF;
-
-    			uint8_t data[8] = {0};
-
-    			data[0] = HI8(time_corase_high);
-    			data[1] = LO8(time_coarse_high);
-    			data[2] = HI8(time_coarse_low);
-    			data[3] = LO8(time_coarse_low);
-
-    			//CAN_Send(&hcan1, 0x101, data, 6);
-    			sd_card_write_data(0x104, data);
-    		}
-    		break;
-
-        case XSENS_EVT_QUARTERNION: // Quarternion form of orientation
-          if(mtdata->type == XSENS_EVT_TYPE_FLOAT4)
+    switch( event )
+    {
+        case XSENS_EVT_DELTA_Q:
+          if( mtdata->type == XSENS_EVT_TYPE_FLOAT4 )
             {
-        	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
-			int16_t x = (int16_t)(mtdata->data.f4x4[0] * 100);
-			int16_t y = (int16_t)(mtdata->data.f4x4[1] * 100);
-			int16_t z = (int16_t)(mtdata->data.f4x4[2] * 100);
-			int16_t w = (int16_t)(mtdata->data.f4x4[3] * 100);
+        	  int16_t delta1 = (int16_t)(mtdata->data.f4x4[0] * 10000);
+        	  int16_t delta2 = (int16_t)(mtdata->data.f4x4[1] * 10000);
+        	  int16_t delta3 = (int16_t)(mtdata->data.f4x4[2] * 10000);
+        	  int16_t delta4 = (int16_t)(mtdata->data.f4x4[3] * 10000);
 
-			uint8_t data[8] = {0};
+        	  uint8_t data[8] = {0};
+        	  data[0] = HI8(delta1);
+        	  data[1] = LO8(delta1);
+        	  data[2] = HI8(delta2);
+        	  data[3] = LO8(delta2);
+        	  data[4] = HI8(delta3);
+        	  data[5] = LO8(delta3);
+			  data[6] = HI8(delta4);
+			  data[7] = LO8(delta4);
 
-			data[0] = HI8(x);
-			data[1] = LO8(x);
-			data[2] = HI8(y);
-			data[3] = LO8(y);
-			data[4] = HI8(z);
-			data[5] = LO8(z);
-			data[6] = HI8(w);
-			data[7] = LO8(w);
-
-			//CAN_Send(&hcan1, 0x100, data, 6);
-			sd_card_write_data(0x105, data);
+        	  //CAN_Send(&hcan1, 0x100, data, 6);
+        	  sd_card_write_data(0x112, data);
             }
             break;
 
-        case XSENS_EVT_EULER:
-          if(mtdata->type == XSENS_EVT_TYPE_FLOAT3)
+        case XSENS_EVT_LAT_LON:
+            if (mtdata->type == XSENS_EVT_TYPE_FLOAT2)
             {
-        	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
-			int16_t ang_x = (int16_t)(mtdata->data.f4x3[0] * 100);
-			int16_t ang_y = (int16_t)(mtdata->data.f4x3[1] * 100);
-			int16_t ang_z = (int16_t)(mtdata->data.f4x3[2] * 100);
+                int32_t lat = (int32_t)(mtdata->data.f4x2[0] * 100);
+                int32_t lon = (int32_t)(mtdata->data.f4x2[1] * 100);
+                uint8_t data[8] = {0};
 
-			uint8_t data[8] = {0};
-			data[0] = HI8(ang_x);
-			data[1] = LO8(ang_x);
-			data[2] = HI8(ang_y);
-			data[3] = LO8(ang_y);
-			data[4] = HI8(ang_z);
-			data[5] = LO8(ang_z);
+                data[0] = (lat >> 24) & 0xFF;
+                data[1] = (lat >> 16) & 0xFF;
+                data[2] = (lat >> 8)  & 0xFF;
+                data[3] = (lat >> 0)  & 0xFF;
 
-
-			//CAN_Send(&hcan1, 0x100, data, 6);
-			sd_card_write_data(0x106, data);
+                data[4] = (lon >> 24) & 0xFF;
+                data[5] = (lon >> 16) & 0xFF;
+                data[6] = (lon >> 8)  & 0xFF;
+                data[7] = (lon >> 0)  & 0xFF;
+                sd_card_write_data(0x125, data);
             }
             break;
 
-        case XSENS_EVT_ROT_MATRIX: // Rotation matrix for orientation
-          if(mtdata->type == XSENS_EVT_TYPE_FLOAT9)
-            {
-        	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
-			int16_t a = (int16_t)(mtdata->data.f4x9[0] * 100);
-			int16_t b = (int16_t)(mtdata->data.f4x9[1] * 100);
-			int16_t c = (int16_t)(mtdata->data.f4x9[2] * 100);
-			int16_t d = (int16_t)(mtdata->data.f4x9[3] * 100);
-			int16_t e = (int16_t)(mtdata->data.f4x9[4] * 100);
-			int16_t f = (int16_t)(mtdata->data.f4x9[5] * 100);
-			int16_t g = (int16_t)(mtdata->data.f4x9[6] * 100);
-			int16_t h = (int16_t)(mtdata->data.f4x9[7] * 100);
-			int16_t i = (int16_t)(mtdata->data.f4x9[8] * 100);
+        case XSENS_EVT_ACCELERATION:
+                  if( mtdata->type == XSENS_EVT_TYPE_FLOAT3)
+                    {
+                	  int16_t accX = (int16_t)(mtdata->data.f4x3[0] * 100);
+                	  int16_t accY = (int16_t)(mtdata->data.f4x3[1] * 100);
+                	  int16_t accZ = (int16_t)(mtdata->data.f4x3[2] * 100);
 
-			uint8_t data1[8] = {0};
-			uint8_t data2[8] = {0};
-			uint8_t data3[8] = {0};
+                	  uint8_t data[6] = {0};
+                	  data[0] = HI8(accX);
+                	  data[1] = LO8(accX);
+                	  data[2] = HI8(accY);
+                	  data[3] = LO8(accY);
+                	  data[4] = HI8(accZ);
+                	  data[5] = LO8(accZ);
 
-			data1[0] = HI8(a);
-			data1[1] = LO8(a);
-			data1[2] = HI8(b);
-			data1[3] = LO8(b);
-			data1[4] = HI8(c);
-			data1[5] = LO8(c);
-			data1[6] = HI8(d);
-			data1[7] = LO8(d);
-			data2[0] = HI8(e);
-			data2[1] = LO8(e);
-			data2[2] = HI8(f);
-			data2[3] = LO8(f);
-			data2[4] = HI8(g);
-			data2[5] = LO8(g);
-			data2[6] = HI8(h);
-			data2[7] = LO8(h);
-			data3[0] = HI8(i);
-			data3[1] = LO8(i);
-
-
-			//CAN_Send(&hcan1, 0x100, data, 6);
-			sd_card_write_data(0x107, data1);
-			sd_card_write_data(0x108, data2);
-			sd_card_write_data(0x109, data3);
-            }
-            break;
-
-        case XSENS_EVT_PRESSURE: // Pressure measured by internal barometer in Pascals
-          if(mtdata->type == XSENS_EVT_TYPE_U32)
-            {
-        	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
-  			int16_t pressure_high = mtdata->data.u4 >> 16;
-  			int16_t pressure_low = mtdata->data.u4 & 0xFF;
-
-			uint8_t data[8] = {0};
-
-			data[0] = HI8(pressure_high);
-			data[1] = LO8(pressure_high);
-			data[2] = HI8(pressure_low);
-			data[3] = LO8(pressure_low);
-
-			//CAN_Send(&hcan1, 0x100, data, 6);
-			sd_card_write_data(0x110, data);
-            }
-            break;
+                	  //CAN_Send(&hcan1, 0x100, data, 6);
+                	  sd_card_write_data(0x113, data);
+                    }
+                    break;
 
         case XSENS_EVT_DELTA_V:
           if(mtdata->type == XSENS_EVT_TYPE_FLOAT3)
             {
         	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
-			int16_t delta_v_x = (int16_t)(mtdata->data.f4x3[0] * 10000);
-			int16_t delta_v_y = (int16_t)(mtdata->data.f4x3[1] * 10000);
-			int16_t delta_v_z = (int16_t)(mtdata->data.f4x3[2] * 10000);
+			int16_t freeAccX = (int16_t)(mtdata->data.f4x3[0] * 100);
+			int16_t freeAccY = (int16_t)(mtdata->data.f4x3[1] * 100);
+			int16_t freeAccZ = (int16_t)(mtdata->data.f4x3[2] * 100);
 
 			uint8_t data[8] = {0};
-			data[0] = HI8(delta_v_x);
-			data[1] = LO8(delta_v_x);
-			data[2] = HI8(delta_v_y);
-			data[3] = LO8(delta_v_y);
-			data[4] = HI8(delta_v_z);
-			data[5] = LO8(delta_v_z);
+			data[0] = HI8(freeAccX);
+			data[1] = LO8(freeAccX);
+			data[2] = HI8(freeAccY);
+			data[3] = LO8(freeAccY);
+			data[4] = HI8(freeAccZ);
+			data[5] = LO8(freeAccZ);
 
 			//CAN_Send(&hcan1, 0x101, data, 6);
-			sd_card_write_data(0x111, data);
+			sd_card_write_data(0x114, data);
             }
             break;
 
-        case XSENS_EVT_LAT_LON:
-        	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
 
-        	int16_t lat = (int16_t)(mtdata->data.f4x3[0] * 100);
-        	int16_t lon = (int16_t)(mtdata->data.f4x3[1] * 100);
 
-        	uint8_t data[8] = {0};
-        	data[0] = HI8(lat);
-        	data[1] = LO8(lat);
-        	data[2] = HI8(lat);
-        	data[3] = LO8(lat);
 
-        	break;
+        case XSENS_EVT_STATUS_BYTE:
+                if (mtdata->type == XSENS_EVT_TYPE_U8)
+                {
+                    uint8_t status_byte = mtdata->data.u1;
+                    uint8_t data[8] = {0};
+
+                    data[0] = status_byte;
+
+                    sd_card_write_data(0x120, data);
+                }
+                break;
+
+            case XSENS_EVT_STATUS_WORD:
+                if (mtdata->type == XSENS_EVT_TYPE_U32)
+                {
+                    uint32_t status_word = mtdata->data.u4;
+                    uint8_t data[8] = {0};
+
+                    data[0] = (status_word >> 24) & 0xFF;
+                    data[1] = (status_word>> 16) & 0xFF;
+                    data[2] = (status_word >> 8)  & 0xFF;
+                    data[3] = (status_word >> 0)  & 0xFF;
+
+                    sd_card_write_data(0x121, data);
+                }
+                break;
+
+            case XSENS_EVT_DEVICE_ID:
+                if (mtdata->type == XSENS_EVT_TYPE_U32)
+                {
+                    uint32_t dev_id = mtdata->data.u4;
+                    uint8_t data[8] = {0};
+
+                    data[0] = (dev_id >> 24) & 0xFF;
+                    data[1] = (dev_id >> 16) & 0xFF;
+                    data[2] = (dev_id >> 8)  & 0xFF;
+                    data[3] = (dev_id >> 0)  & 0xFF;
+
+                    sd_card_write_data(0x122, data);
+                }
+                break;
+
+            case XSENS_EVT_LOCATION_ID:
+                if (mtdata->type == XSENS_EVT_TYPE_U16)
+                {
+                    uint16_t location = mtdata->data.u2;
+                    uint8_t data[8] = {0};
+
+                    data[0] = HI8(location);
+                    data[1] = LO8(location);
+
+                    sd_card_write_data(0x123, data);
+                }
+                break;
+
+            case XSENS_EVT_POSITION_ECEF:
+                if(mtdata->type == XSENS_EVT_TYPE_FLOAT3)
+                {
+                    uint8_t data[12] = {0};
+                    memcpy(data, mtdata->data.f4x3, 12);
+
+                    sd_card_write_data(0x124, data);
+                }
+    			int16_t ecef_x = (int16_t)(mtdata->data.f4x3[0] * 100);
+    			int16_t ecef_y = (int16_t)(mtdata->data.f4x3[1] * 100);
+    			int16_t ecef_z = (int16_t)(mtdata->data.f4x3[2] * 100);
+
+    			uint8_t data[8] = {0};
+    			data[0] = HI8(ecef_x);
+    			data[1] = LO8(ecef_x);
+    			data[2] = HI8(ecef_y);
+    			data[3] = LO8(ecef_y);
+    			data[4] = HI8(ecef_z);
+    			data[5] = LO8(ecef_z);
+
+
+    			sd_card_write_data(0xA100, data);
+                break;
+
+        case XSENS_EVT_ACCELERATION_HR:
+              if(mtdata->type == XSENS_EVT_TYPE_FLOAT3)
+               {
+
+            	int16_t accX = (int16_t)(mtdata->data.f4x3[0] * 100);
+        		int16_t accY = (int16_t)(mtdata->data.f4x3[1] * 100);
+        		int16_t accZ = (int16_t)(mtdata->data.f4x3[2] * 100);
+
+        		uint8_t data[8] = {0};
+        		data[0] = HI8(accX);
+        		data[1] = LO8(accX);
+        		data[2] = HI8(accY);
+        		data[3] = LO8(accY);
+        		data[4] = HI8(accZ);
+        		data[5] = LO8(accZ);
+
+        			//CAN_Send(&hcan1, 0x101, data, 6);
+        		sd_card_write_data(0x115, data);
+                }
+                break;
+
+        case XSENS_EVT_RATE_OF_TURN:
+                  if(mtdata->type == XSENS_EVT_TYPE_FLOAT3)
+                    {
+                        	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+                	int16_t gyrX = (int16_t)(mtdata->data.f4x3[0] * 1000);
+                	int16_t gyrY = (int16_t)(mtdata->data.f4x3[1] * 1000);
+                	int16_t gyrZ = (int16_t)(mtdata->data.f4x3[2] * 1000);
+
+                	uint8_t data[8] = {0};
+                	data[0] = HI8(gyrX);
+                	data[1] = LO8(gyrX);
+                	data[2] = HI8(gyrY);
+                	data[3] = LO8(gyrY);
+                	data[4] = HI8(gyrZ);
+                	data[5] = LO8(gyrZ);
+
+                	//CAN_Send(&hcan1, 0x101, data, 6);
+                	sd_card_write_data(0x116, data);
+                    }
+                    break;
+
+        case XSENS_EVT_RATE_OF_TURN_HR:
+                             if(mtdata->type == XSENS_EVT_TYPE_FLOAT3)
+                                    {
+                                	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+                        			int16_t gyrX = (int16_t)(mtdata->data.f4x3[0] * 1000);
+                        			int16_t gyrY = (int16_t)(mtdata->data.f4x3[1] * 1000);
+                        			int16_t gyrZ = (int16_t)(mtdata->data.f4x3[2] * 1000);
+
+                        			uint8_t data[8] = {0};
+                        			data[0] = HI8(gyrX);
+                        			data[1] = LO8(gyrX);
+                        			data[2] = HI8(gyrY);
+                        			data[3] = LO8(gyrY);
+                        			data[4] = HI8(gyrZ);
+                        			data[5] = LO8(gyrZ);
+
+                        			//CAN_Send(&hcan1, 0x101, data, 6);
+                        			sd_card_write_data(0x117, data);
+                                    }
+                                    break;
+        case XSENS_EVT_GNSS_PVT_PULSE:
+                   if(mtdata->type == XSENS_EVT_TYPE_U32)
+                           {
+                        //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+                       	int32_t pulse = mtdata->data.u4;
+
+                       	uint8_t data[4] = {0};
+                       	data[0] = pulse & 0xFF;
+                       	data[1] = (pulse >> 8) & 0xFF;
+                       	data[2] = (pulse >> 16) & 0xFF;
+                       	data[3] = (pulse >> 24) & 0xFF;
+
+                       	//CAN_Send(&hcan1, 0x101, data, 6);
+                       	sd_card_write_data(0x118, data);
+                           }
+                           break;
+
+        case XSENS_EVT_MAGNETIC:
+                          if(mtdata->type == XSENS_EVT_TYPE_FLOAT3)
+                            {
+                                	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+                        	int16_t magX = (int16_t)(mtdata->data.f4x3[0] * 1000);
+                        	int16_t magY = (int16_t)(mtdata->data.f4x3[1] * 1000);
+                        	int16_t magZ = (int16_t)(mtdata->data.f4x3[2] * 1000);
+
+                        	uint8_t data[8] = {0};
+                        	data[0] = HI8(magX);
+                        	data[1] = LO8(magX);
+                        	data[2] = HI8(magY);
+                        	data[3] = LO8(magY);
+                        	data[4] = HI8(magZ);
+                        	data[5] = LO8(magZ);
+
+                        	//CAN_Send(&hcan1, 0x101, data, 6);
+                        	sd_card_write_data(0x119, data);
+                            }
+                            break;
+        case XSENS_EVT_ALTITUDE_ELLIPSOID:
+                        if (mtdata->type == XSENS_EVT_TYPE_FLOAT)
+                        {
+                            int16_t alt = (int16_t)(mtdata->data.f4 * 100);
+                            uint8_t data[8] = {0};
+
+                            data[0] = HI8(alt);
+                            data[1] = LO8(alt);
+
+                            sd_card_write_data(0x126, data);
+                        }
+                        break;
+
 
         default:
         	// IGNORE
         	break;
+
+        case XSENS_EVT_VELOCITY_XYZ:
+                        if (mtdata->type == XSENS_EVT_TYPE_FLOAT3)
+                        {
+                            int16_t vel_x = (int16_t)(mtdata->data.f4x3[0] * 100);
+                            int16_t vel_y = (int16_t)(mtdata->data.f4x3[1] * 100);
+                            int16_t vel_z = (int16_t)(mtdata->data.f4x3[2] * 100);
+                            uint8_t data[8] = {0};
+
+                            data[0] = HI8(vel_x);
+                            data[1] = LO8(vel_x);
+                            data[2] = HI8(vel_y);
+                            data[3] = LO8(vel_y);
+                            data[4] = HI8(vel_z);
+                            data[5] = LO8(vel_z);
+
+                            sd_card_write_data(0x127, data);
+                        }
+                        break;
     }
 }
+
+
+

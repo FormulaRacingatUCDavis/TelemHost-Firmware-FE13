@@ -4,4 +4,4 @@
 ../Core/Src/can_manager.c:302:6:can_tx_torque_request	56	static
 ../Core/Src/can_manager.c:342:6:can_tx_disable_MC	24	static
 ../Core/Src/can_manager.c:357:6:can_clear_MC_fault	32	static
-../Core/Src/can_manager.c:382:6:can_tx_override_cooling_request	16	static
+../Core/Src/can_manager.c:382:6:can_tx_override_cooling_request	24	static

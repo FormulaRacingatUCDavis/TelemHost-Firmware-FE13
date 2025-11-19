@@ -94,22 +94,118 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
 
-    switch( event )
-    {
-        case XSENS_EVT_DELTA_V:
-          if( mtdata->type == XSENS_EVT_TYPE_FLOAT3 )
-            {
+    switch (event) {
 
+    	case XSENS_EVT_TEMPERATURE: //temperature in celcius
+    		if (mtdata->type == XSENS_EVT_TYPE_FLOAT) {
+    			//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+    			int16_t temp = (int16_t)(mtdata->data.f4 * 100);
+
+    			uint8_t data[8] = {0};
+    			data[0] = HI8(temp);
+    			data[1] = LO8(temp);
+
+    			//CAN_Send(&hcan1, 0x100, data, 6);
+    			sd_card_write_data(0x100, data);
+    		}
+    		break;
+
+    	//INCOMPLETE - Time is given in a type_none
+
+    	case XSENS_EVT_UTC_TIME:
+        	if (mtdata->type == XSENS_EVT_TYPE_NONE) {
+        			//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+        			int16_t ang_x = (int16_t)mtdata->data.f4x3[0];
+        			int16_t ang_y = (int16_t)mtdata->data.f4x3[1];
+        			int16_t ang_z = (int16_t)mtdata->data.f4x3[2];
+
+        			//CAN_Send(&hcan1, 0x100, data, 6);
+        			sd_card_write_data(0x101, data);
+        		}
+        	break;
+
+    	case XSENS_EVT_PACKET_COUNT: // Number of packets, incremented per MTData2 message
+        	if (mtdata->type == XSENS_EVT_TYPE_U16) {
+        			//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+        			int16_t pckt_cnt = mtdata->u2;
+
+        			uint8_t data[8] = {0};
+        			data[0] = HI8(pckt_cnt);
+        			data[1] = LO8(pckt_cnt);
+
+        			//CAN_Send(&hcan1, 0x100, data, 6);
+        			sd_card_write_data(0x102, data);
+        		}
+        	break;
+
+    	case XSENS_EVT_TIME_FINE: // Sample time in # of 10 kHz clock ticks
+    		if (mtdata->type == XSENS_EVT_TYPE_U32) {
+    			//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+    			int16_t time_fine_high = mtdata->data.u4 >> 16;
+    			int16_t time_fine_low = mtdata->data.u4 & 0xFF;
+
+    			uint8_t data[8] = {0};
+
+    			data[0] = HI8(time_fine_high);
+    			data[1] = LO8(time_fine_high);
+    			data[2] = HI8(time_fine_low);
+    			data[3] = LO8(time_fine_low);
+
+    			//CAN_Send(&hcan1, 0x101, data, 6);
+    			sd_card_write_data(0x103, data);
+    		}
+    		break;
+
+    	case XSENS_EVT_TIME_COARSE: // Sample time in # of seconds
+    		if (mtdata->type == XSENS_EVT_TYPE_U3s2) {
+    			//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+    			int16_t time_coarse_high = mtdata->data.u4 >> 16;
+    			int16_t time_corase_low = mtdata->data.u4 & 0xFF;
+
+    			uint8_t data[8] = {0};
+
+    			data[0] = HI8(time_corase_high);
+    			data[1] = LO8(time_coarse_high);
+    			data[2] = HI8(time_coarse_low);
+    			data[3] = LO8(time_coarse_low);
+
+    			//CAN_Send(&hcan1, 0x101, data, 6);
+    			sd_card_write_data(0x104, data);
+    		}
+    		break;
+
+        case XSENS_EVT_QUARTERNION: // Quarternion form of orientation
+          if(mtdata->type == XSENS_EVT_TYPE_FLOAT4)
+            {
+        	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+			int16_t x = (int16_t)(mtdata->data.f4x4[0] * 100);
+			int16_t y = (int16_t)(mtdata->data.f4x4[1] * 100);
+			int16_t z = (int16_t)(mtdata->data.f4x4[2] * 100);
+			int16_t w = (int16_t)(mtdata->data.f4x4[3] * 100);
+
+			uint8_t data[8] = {0};
+
+			data[0] = HI8(x);
+			data[1] = LO8(x);
+			data[2] = HI8(y);
+			data[3] = LO8(y);
+			data[4] = HI8(z);
+			data[5] = LO8(z);
+			data[6] = HI8(w);
+			data[7] = LO8(w);
+
+			//CAN_Send(&hcan1, 0x100, data, 6);
+			sd_card_write_data(0x105, data);
             }
             break;
 
         case XSENS_EVT_EULER:
-          if( mtdata->type == XSENS_EVT_TYPE_FLOAT3 )
+          if(mtdata->type == XSENS_EVT_TYPE_FLOAT3)
             {
         	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
-			int16_t ang_x = (int16_t)mtdata->data.f4x3[0];
-			int16_t ang_y = (int16_t)mtdata->data.f4x3[1];
-			int16_t ang_z = (int16_t)mtdata->data.f4x3[2];
+			int16_t ang_x = (int16_t)(mtdata->data.f4x3[0] * 100);
+			int16_t ang_y = (int16_t)(mtdata->data.f4x3[1] * 100);
+			int16_t ang_z = (int16_t)(mtdata->data.f4x3[2] * 100);
 
 			uint8_t data[8] = {0};
 			data[0] = HI8(ang_x);
@@ -121,33 +217,107 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 
 
 			//CAN_Send(&hcan1, 0x100, data, 6);
-			sd_card_write_data(0xE100, data);
+			sd_card_write_data(0x106, data);
             }
             break;
 
-        case XSENS_EVT_FREE_ACCELERATION:
+        case XSENS_EVT_ROT_MATRIX: // Rotation matrix for orientation
+          if(mtdata->type == XSENS_EVT_TYPE_FLOAT9)
+            {
+        	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+			int16_t a = (int16_t)(mtdata->data.f4x9[0] * 100);
+			int16_t b = (int16_t)(mtdata->data.f4x9[1] * 100);
+			int16_t c = (int16_t)(mtdata->data.f4x9[2] * 100);
+			int16_t d = (int16_t)(mtdata->data.f4x9[3] * 100);
+			int16_t e = (int16_t)(mtdata->data.f4x9[4] * 100);
+			int16_t f = (int16_t)(mtdata->data.f4x9[5] * 100);
+			int16_t g = (int16_t)(mtdata->data.f4x9[6] * 100);
+			int16_t h = (int16_t)(mtdata->data.f4x9[7] * 100);
+			int16_t i = (int16_t)(mtdata->data.f4x9[8] * 100);
+
+			uint8_t data1[8] = {0};
+			uint8_t data2[8] = {0};
+			uint8_t data3[8] = {0};
+
+			data1[0] = HI8(a);
+			data1[1] = LO8(a);
+			data1[2] = HI8(b);
+			data1[3] = LO8(b);
+			data1[4] = HI8(c);
+			data1[5] = LO8(c);
+			data1[6] = HI8(d);
+			data1[7] = LO8(d);
+			data2[0] = HI8(e);
+			data2[1] = LO8(e);
+			data2[2] = HI8(f);
+			data2[3] = LO8(f);
+			data2[4] = HI8(g);
+			data2[5] = LO8(g);
+			data2[6] = HI8(h);
+			data2[7] = LO8(h);
+			data3[0] = HI8(i);
+			data3[1] = LO8(i);
+
+
+			//CAN_Send(&hcan1, 0x100, data, 6);
+			sd_card_write_data(0x107, data1);
+			sd_card_write_data(0x108, data2);
+			sd_card_write_data(0x109, data3);
+            }
+            break;
+
+        case XSENS_EVT_PRESSURE: // Pressure measured by internal barometer in Pascals
+          if(mtdata->type == XSENS_EVT_TYPE_U32)
+            {
+        	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+  			int16_t pressure_high = mtdata->data.u4 >> 16;
+  			int16_t pressure_low = mtdata->data.u4 & 0xFF;
+
+			uint8_t data[8] = {0};
+
+			data[0] = HI8(pressure_high);
+			data[1] = LO8(pressure_high);
+			data[2] = HI8(pressure_low);
+			data[3] = LO8(pressure_low);
+
+			//CAN_Send(&hcan1, 0x100, data, 6);
+			sd_card_write_data(0x110, data);
+            }
+            break;
+
+        case XSENS_EVT_DELTA_V:
           if(mtdata->type == XSENS_EVT_TYPE_FLOAT3)
             {
         	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
-			int16_t acc_x = (int16_t)(mtdata->data.f4x3[0] * 100);
-			int16_t acc_y = (int16_t)(mtdata->data.f4x3[1] * 100);
-			int16_t acc_z = (int16_t)(mtdata->data.f4x3[2] * 100);
+			int16_t delta_v_x = (int16_t)(mtdata->data.f4x3[0] * 10000);
+			int16_t delta_v_y = (int16_t)(mtdata->data.f4x3[1] * 10000);
+			int16_t delta_v_z = (int16_t)(mtdata->data.f4x3[2] * 10000);
 
 			uint8_t data[8] = {0};
-			data[0] = HI8(acc_x);
-			data[1] = LO8(acc_x);
-			data[2] = HI8(acc_y);
-			data[3] = LO8(acc_y);
-			data[4] = HI8(acc_z);
-			data[5] = LO8(acc_z);
+			data[0] = HI8(delta_v_x);
+			data[1] = LO8(delta_v_x);
+			data[2] = HI8(delta_v_y);
+			data[3] = LO8(delta_v_y);
+			data[4] = HI8(delta_v_z);
+			data[5] = LO8(delta_v_z);
 
 			//CAN_Send(&hcan1, 0x101, data, 6);
-			sd_card_write_data(0xA100, data);
+			sd_card_write_data(0x111, data);
             }
             break;
 
         case XSENS_EVT_LAT_LON:
         	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+
+        	int16_t lat = (int16_t)(mtdata->data.f4x3[0] * 100);
+        	int16_t lon = (int16_t)(mtdata->data.f4x3[1] * 100);
+
+        	uint8_t data[8] = {0};
+        	data[0] = HI8(lat);
+        	data[1] = LO8(lat);
+        	data[2] = HI8(lat);
+        	data[3] = LO8(lat);
+
         	break;
 
         default:

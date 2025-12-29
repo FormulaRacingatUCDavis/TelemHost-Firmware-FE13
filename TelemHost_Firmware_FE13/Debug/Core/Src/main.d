@@ -50,6 +50,46 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/sd_diskio.h \
+ ../LWIP/App/lwip.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/opt.h \
+ ../LWIP/Target/lwipopts.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/debug.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/arch.h \
+ ../Middlewares/Third_Party/LwIP/system/arch/cc.h \
+ ../Middlewares/Third_Party/LwIP/system/arch/cpu.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/mem.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/memp.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/priv/memp_std.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/priv/memp_priv.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/priv/mem_priv.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/stats.h \
+ ../Middlewares/Third_Party/LwIP/src/include/netif/etharp.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/etharp.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/pbuf.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/err.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/ip4_addr.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/def.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/netif.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/ip_addr.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/ip6_addr.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/def.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/ip4.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/prot/ip4.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/prot/ethernet.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/prot/ieee.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/prot/etharp.h \
+ ../Middlewares/Third_Party/LwIP/src/include/netif/ethernet.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/dhcp.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/udp.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/ip.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/ip6.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/prot/ip.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/prot/udp.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/timeouts.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/sys.h \
+ ../Middlewares/Third_Party/LwIP/system/arch/sys_arch.h \
+ ../LWIP/Target/ethernetif.h \
+ ../Middlewares/Third_Party/LwIP/src/include/lwip/tcpip.h \
  ../Core/Inc/can_manager.h ../Core/Inc/fsm.h ../Core/Inc/sensors.h \
  ../Core/Inc/sensors.h ../Core/Inc/fsm.h ../Core/Inc/sd_card.h \
  ../Core/Inc/telem.h ../Core/Inc/xsens.h ../Core/Inc/serial_print.h \
@@ -110,6 +150,46 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Middlewares/Third_Party/FatFs/src/diskio.h:
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 ../FATFS/Target/sd_diskio.h:
+../LWIP/App/lwip.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/opt.h:
+../LWIP/Target/lwipopts.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/debug.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/arch.h:
+../Middlewares/Third_Party/LwIP/system/arch/cc.h:
+../Middlewares/Third_Party/LwIP/system/arch/cpu.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/mem.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/memp.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/priv/memp_std.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/priv/memp_priv.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/priv/mem_priv.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/stats.h:
+../Middlewares/Third_Party/LwIP/src/include/netif/etharp.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/etharp.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/pbuf.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/err.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/ip4_addr.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/def.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/netif.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/ip_addr.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/ip6_addr.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/def.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/ip4.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/prot/ip4.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/prot/ethernet.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/prot/ieee.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/prot/etharp.h:
+../Middlewares/Third_Party/LwIP/src/include/netif/ethernet.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/dhcp.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/udp.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/ip.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/ip6.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/prot/ip.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/prot/udp.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/timeouts.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/sys.h:
+../Middlewares/Third_Party/LwIP/system/arch/sys_arch.h:
+../LWIP/Target/ethernetif.h:
+../Middlewares/Third_Party/LwIP/src/include/lwip/tcpip.h:
 ../Core/Inc/can_manager.h:
 ../Core/Inc/fsm.h:
 ../Core/Inc/sensors.h:

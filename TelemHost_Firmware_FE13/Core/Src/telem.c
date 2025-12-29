@@ -37,8 +37,6 @@ void telem_send(void) {
 			default:
 				return;
 		}
-		// TODO remove, temp testing
-		p.data[0]= 99;
 
 		// send packet to ESP32 (uart7)
 //		HAL_StatusTypeDef esp_uart_status = HAL_UART_Transmit(&huart7, (uint8_t*)&p, PACKET_LENGTH, 1000);

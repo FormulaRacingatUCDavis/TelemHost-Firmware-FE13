@@ -298,46 +298,6 @@ HAL_StatusTypeDef CAN_Send(CAN_HandleTypeDef *hcan, uint32_t id, uint8_t* data, 
 //}
 
 
-// transmit torque request
-void can_tx_torque_request(CAN_HandleTypeDef *hcan){
-	static uint8_t torque_request_msg_counter = 0;
-
-	TxHeader.IDE = CAN_ID_STD;
-	TxHeader.StdId = TORQUE_REQUEST;
-	TxHeader.RTR = CAN_RTR_DATA;
-	TxHeader.DLC = 8;
-
-    uint8_t byte5 = 0b010;   //speed mode | discharge_enable | inverter enable
-    uint16_t throttle_msg_byte = 0;
-    if (state == DRIVE) {
-    	byte5 |= 0x01;  //set inverter enable bit
-    	throttle_msg_byte = requested_throttle();
-    }
-
-    uint8_t data_tx_torque[8] = {
-        (uint8_t)(throttle_msg_byte & 0xff), // 0 - torque command lower (Nm*10)
-        (uint8_t)(throttle_msg_byte >> 8) & 0xFF, // 1 - torque command upper (Nm*10)
-        0, // 2 - speed command lower (not applicable)
-        0, // 3 - speed command upper (not applicable)
-        1, // 4 - direction (1 = forward, 0 = backward)
-        byte5, // 5 - speed mode | discharge_enable | inverter enable
-        0, // 6 - torque limit lower (if 0, default EEPROM value used)
-        0 // 7 - torque limit upper (if 0, default EEPROM value used)
-    };
-
-    if (torque_request_msg_counter == 0)
-    	sd_card_write_can_tx(TxHeader, data_tx_torque);
-
-    torque_request_msg_counter++;
-	torque_request_msg_counter %= 2;
-
-    if (HAL_CAN_AddTxMessage(hcan, &TxHeader, data_tx_torque, &TxMailbox) != HAL_OK)
-	{
-	  print("CAN Tx failed\r\n");
-	}
-//    write_tx_to_sd(TxHeader, data_tx_torque);
-}
-
 
 void can_tx_disable_MC(CAN_HandleTypeDef *hcan) {
 	TxHeader.IDE = CAN_ID_STD;

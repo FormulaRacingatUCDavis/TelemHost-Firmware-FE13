@@ -738,7 +738,7 @@ void MainEntry(void *argument)
   {
 
 
-	// send data to ESP32
+	// zsend data to ESP32
 	telem_send();
 	//write_rx_to_sd();
 

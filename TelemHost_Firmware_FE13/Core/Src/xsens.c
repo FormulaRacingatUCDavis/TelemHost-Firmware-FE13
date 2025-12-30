@@ -159,7 +159,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                     }
                     break;
 
-        case XSENS_EVT_FREE_ACCELERATION:
+        case XSENS_EVT_DELTA_V:
           if(mtdata->type == XSENS_EVT_TYPE_FLOAT3)
             {
         	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);

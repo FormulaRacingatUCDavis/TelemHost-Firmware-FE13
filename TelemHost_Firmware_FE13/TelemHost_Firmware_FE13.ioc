@@ -447,4 +447,3 @@ VP_TIM7_VS_ClockSourceINT.Mode=Enable_Timer
 VP_TIM7_VS_ClockSourceINT.Signal=TIM7_VS_ClockSourceINT
 board=custom
 rtos.0.ip=FREERTOS
-isbadioc=false

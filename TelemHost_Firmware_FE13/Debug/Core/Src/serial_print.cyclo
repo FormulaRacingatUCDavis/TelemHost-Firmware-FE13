@@ -1,2 +1,0 @@
-../Core/Src/serial_print.c:8:6:print	1
-../Core/Src/serial_print.c:22:6:dump_can_data	1

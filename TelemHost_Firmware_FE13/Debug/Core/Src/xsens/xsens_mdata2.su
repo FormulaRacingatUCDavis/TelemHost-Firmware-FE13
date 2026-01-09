@@ -1,2 +1,0 @@
-../Core/Src/xsens/xsens_mdata2.c:10:6:xsens_mdata2_process	280	static
-../Core/Src/xsens/xsens_mdata2.c:118:6:xsens_mdata2_decode_field	64	static

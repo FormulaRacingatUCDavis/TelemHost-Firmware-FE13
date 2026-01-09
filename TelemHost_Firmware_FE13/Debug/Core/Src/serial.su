@@ -1,5 +1,0 @@
-../Core/Src/serial.c:3:6:Serial_Init	24	static
-../Core/Src/serial.c:11:19:Serial_StartListening	16	static
-../Core/Src/serial.c:16:10:Serial_BytesAvailable	24	static
-../Core/Src/serial.c:31:9:Serial_GetByte	24	static
-../Core/Src/serial.c:39:19:Serial_SendBytes	24	static

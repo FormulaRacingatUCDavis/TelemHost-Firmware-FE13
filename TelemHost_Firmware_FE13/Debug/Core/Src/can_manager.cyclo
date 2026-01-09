@@ -1,6 +1,0 @@
-../Core/Src/can_manager.c:38:6:HAL_CAN_RxFifo0MsgPendingCallback	1
-../Core/Src/can_manager.c:47:13:save_can_rx_data	35
-../Core/Src/can_manager.c:256:19:CAN_Send	2
-../Core/Src/can_manager.c:302:6:can_tx_disable_MC	2
-../Core/Src/can_manager.c:317:6:can_clear_MC_fault	2
-../Core/Src/can_manager.c:342:6:can_tx_override_cooling_request	1

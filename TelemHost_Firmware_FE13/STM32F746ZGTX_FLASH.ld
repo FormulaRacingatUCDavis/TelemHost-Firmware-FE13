@@ -180,6 +180,17 @@ SECTIONS
     libm.a ( * )
     libgcc.a ( * )
   }
+  
+  /* FRUCD: Added this to make ethernet work */
+  /* See https://controllerstech.com/stm32-ethernet-hardware-cubemx-lwip-ping/ for more info */
+  .lwip_sec (NOLOAD) : 
+  {    
+    . = ABSOLUTE(0x2004C000);
+    *(.RxDecripSection) 
+    
+    . = ABSOLUTE(0x2004C0A0);
+    *(.TxDecripSection)
+  } >RAM
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
 }

@@ -21,7 +21,7 @@ void print(const char *str){
 }
 
 void print_motor_data(){
-    char buf[256];
+    char buf[128];
 
     print("MOTOR DATA:\n");
 
@@ -39,7 +39,7 @@ void print_motor_data(){
 }
 
 void print_cooling_data(){
-    char buf[256];
+    char buf[128];
 
     print("COOLING DATA:\n");
 
@@ -57,7 +57,7 @@ void print_cooling_data(){
 }
 
 void print_pei_flags(){
-	char buf[256];
+	char buf[128];
 
 	snprintf(buf, sizeof(buf),
 	         "IMD OK: %u\n"
@@ -77,7 +77,7 @@ void print_pei_flags(){
 }
 
 void print_bms_data(void){
-    char buf[256];
+    char buf[128];
 
     print("BMS DATA:\n");
 
@@ -95,7 +95,7 @@ void print_bms_data(void){
 }
 
 void print_mc_data(void){
-    char buf[256];
+    char buf[128];
 
     print("MC DATA:\n");
 

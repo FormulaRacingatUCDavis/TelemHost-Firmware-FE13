@@ -34,6 +34,7 @@
 #include "xsens.h"
 #include "serial_print.h"
 #include "config.h"
+#include "udp.h"
 
 
 /* USER CODE END Includes */
@@ -123,6 +124,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == GASP_INTERRUPT_Pin) {
 //		sd_card_close_file();
 	}
+}
+
+
+void udpserver_init(void)
+{
+	// create new thread for UDP server
+  sys_thread_new("udp_thread", udp_thread, NULL, DEFAULT_THREAD_STACKSIZE,osPriorityNormal);
 }
 
 
@@ -684,11 +692,11 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : CARD_DETECT_Pin MON_12V_Pin */
-  GPIO_InitStruct.Pin = CARD_DETECT_Pin|MON_12V_Pin;
+  /*Configure GPIO pin : MON_12V_Pin */
+  GPIO_InitStruct.Pin = MON_12V_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+  HAL_GPIO_Init(MON_12V_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : GPIO1_3V3_Pin GPIO2_3v3_Pin */
   GPIO_InitStruct.Pin = GPIO1_3V3_Pin|GPIO2_3v3_Pin;
@@ -709,6 +717,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(HEARTBEAT_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : CARD_DETECT_Pin */
+  GPIO_InitStruct.Pin = CARD_DETECT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(CARD_DETECT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : GASP_INTERRUPT_Pin */
   GPIO_InitStruct.Pin = GASP_INTERRUPT_Pin;

@@ -375,9 +375,6 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         break;
 
 
-        default:
-        	// IGNORE
-        	break;
 
         case XSENS_EVT_VELOCITY_XYZ:
                         if (mtdata->type == XSENS_EVT_TYPE_FLOAT3)
@@ -397,6 +394,10 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                             sd_card_write_data(0x127, data);
                         }
                         break;
+
+        default:
+                	// IGNORE
+                	break;
     }
 }
 

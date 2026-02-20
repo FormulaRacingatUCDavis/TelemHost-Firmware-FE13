@@ -34,6 +34,28 @@
 #define USER_PHY_MAX_DEV_ADDR   ((uint32_t)31U)
 /* USER CODE BEGIN PD */
 
+#define USER_PHY_ANNPTR   ((uint16_t)0x0007U) // auto negotiation next page register
+// #define USER_PHY_SMR      ((uint16_t)0x0019U) // SMR "special mode register" doesn't seem to exist for dp83822?
+#define USER_PHY_MISR1    ((uint16_t)0x0012U) // (prev known as ISFR) MII Interrupt Status register #1
+#define USER_PHY_MISR2    ((uint16_t)0x0013U) // MII Interrupt Status register #2
+//#define USER_PHY_IMR      ((uint16_t)0x0011U) // IMR "interrupt mask register" doesn't exist for our PHY
+	// instead of IMR, DP83822 has a PHYSCR which includes the same interrupt related bits
+	// in adddition, DP83822 has MISR1 and MISR2, which allow for the enabling of interrupts (IT)
+#define USER_PHY_PHYSCSR  ((uint16_t)0x0011U) // PHY Specific Control Register
+
+//#define DP83822_BSR_MF_PREAMBLE      ((uint16_t)0x0040U) // doesn't exist
+
+// ANER Auto Negotiation Expansion Register
+//#define DP83822_ANER_RX_NP_LOCATION_ABLE    ((uint16_t)0x0040U)
+//#define DP83822_ANER_RX_NP_STORAGE_LOCATION ((uint16_t)0x0020U)
+#define DP83822_ANER_PARALLEL_DETECT_FAULT  ((uint16_t)0x0004U)
+#define DP83822_ANER_LP_NP_ABLE             ((uint16_t)0x0003U) // Link Partner Next Page Able
+#define DP83822_ANER_LD_NP_ABLE             ((uint16_t)0x0002U) // Local Device Next Page Able
+#define DP83822_ANER_PAGE_RECEIVED          ((uint16_t)0x0001U)
+#define DP83822_ANER_LP_AUTONEG_ABLE        ((uint16_t)0x0000U) // Link Partner Auto-Negotiation Able
+
+
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -441,5 +463,304 @@ int32_t USER_PHY_DisableLoopbackMode(user_phy_Object_t *pObj)
 }
 
 /* USER CODE BEGIN 1 */
+
+/**
+  * @brief  Disable the DP83822 power down mode.
+  * @param  pObj: device object user_phy_Object_t.
+  * @retval USER_PHY_STATUS_OK  if OK
+  *         USER_PHY_STATUS_READ_ERROR if connot read register
+  *         USER_PHY_STATUS_WRITE_ERROR if connot write to register
+  */
+int32_t USER_PHY_DisablePowerDownMode(user_phy_Object_t *pObj)
+{
+  uint32_t readval = 0;
+  int32_t status = USER_PHY_STATUS_OK;
+
+  if(pObj->IO.ReadReg(pObj->DevAddr, USER_PHY_BCR, &readval) >= 0)
+  {
+    readval &= ~USER_PHY_BCR_POWER_DOWN;
+
+    /* Apply configuration */
+    if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_BCR, readval) < 0)
+    {
+      status =  USER_PHY_STATUS_WRITE_ERROR;
+    }
+  }
+  else
+  {
+    status = USER_PHY_STATUS_READ_ERROR;
+  }
+
+  return status;
+}
+
+
+/**
+  * @brief  Enable the DP83822 power down mode.
+  * @param  pObj: device object user_phy_Object_t.
+  * @retval USER_PHY_STATUS_OK  if OK
+  *         USER_PHY_STATUS_READ_ERROR if connot read register
+  *         USER_PHY_STATUS_WRITE_ERROR if connot write to register
+  */
+int32_t USER_PHY_EnablePowerDownMode(user_phy_Object_t *pObj)
+{
+  uint32_t readval = 0;
+  int32_t status = USER_PHY_STATUS_OK;
+
+  if(pObj->IO.ReadReg(pObj->DevAddr, USER_PHY_BCR, &readval) >= 0)
+  {
+    readval |= USER_PHY_BCR_POWER_DOWN;
+
+    /* Apply configuration */
+    if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_BCR, readval) < 0)
+    {
+      status =  USER_PHY_STATUS_WRITE_ERROR;
+    }
+  }
+  else
+  {
+    status = USER_PHY_STATUS_READ_ERROR;
+  }
+
+  return status;
+}
+
+/**
+  * @brief  Start the auto negotiation process.
+  * @param  pObj: device object user_phy_Object_t.
+  * @retval USER_PHY_STATUS_OK  if OK
+  *         USER_PHY_STATUS_READ_ERROR if connot read register
+  *         USER_PHY_STATUS_WRITE_ERROR if connot write to register
+  */
+int32_t USER_PHY_StartAutoNego(user_phy_Object_t *pObj)
+{
+  uint32_t readval = 0;
+  int32_t status = USER_PHY_STATUS_OK;
+
+  if(pObj->IO.ReadReg(pObj->DevAddr, USER_PHY_BCR, &readval) >= 0)
+  {
+    readval |= USER_PHY_BCR_AUTONEGO_EN;
+
+    /* Apply configuration */
+    if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_BCR, readval) < 0)
+    {
+      status =  USER_PHY_STATUS_WRITE_ERROR;
+    }
+  }
+  else
+  {
+    status = USER_PHY_STATUS_READ_ERROR;
+  }
+
+  return status;
+}
+
+
+/**
+  * @brief  Enable IT source.
+  * @param  pObj: Pointer to device object.
+  * @param  Interrupt: IT source to be enabled
+  *         should be a value or a combination of MISR1 interrupts
+  * @retval USER_PHY_STATUS_OK  if OK
+  *         USER_PHY_STATUS_READ_ERROR if connot read register
+  *         USER_PHY_STATUS_WRITE_ERROR if connot write to register
+  */
+int32_t USER_PHY_EnableIT_MISR1(user_phy_Object_t *pObj, uint32_t Interrupt)
+{
+  uint32_t readval = 0;
+  int32_t status = USER_PHY_STATUS_OK;
+
+  if(pObj->IO.ReadReg(pObj->DevAddr, USER_PHY_MISR1, &readval) >= 0)
+  {
+    readval |= Interrupt;
+
+    /* Apply configuration */
+    if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_MISR1, readval) < 0)
+    {
+      status =  USER_PHY_STATUS_WRITE_ERROR;
+    }
+  }
+  else
+  {
+    status = USER_PHY_STATUS_READ_ERROR;
+  }
+
+  return status;
+}
+
+
+/**
+  * @brief  Enable IT source.
+  * @param  pObj: Pointer to device object.
+  * @param  Interrupt: IT source to be enabled
+  *         should be a value or a combination of MISR2 interrupts
+  * @retval USER_PHY_STATUS_OK  if OK
+  *         USER_PHY_STATUS_READ_ERROR if connot read register
+  *         USER_PHY_STATUS_WRITE_ERROR if connot write to register
+  */
+int32_t USER_PHY_EnableIT_MISR2(user_phy_Object_t *pObj, uint32_t Interrupt)
+{
+  uint32_t readval = 0;
+  int32_t status = USER_PHY_STATUS_OK;
+
+  if(pObj->IO.ReadReg(pObj->DevAddr, USER_PHY_MISR2, &readval) >= 0)
+  {
+    readval |= Interrupt;
+
+    /* Apply configuration */
+    if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_MISR2, readval) < 0)
+    {
+      status =  USER_PHY_STATUS_WRITE_ERROR;
+    }
+  }
+  else
+  {
+    status = USER_PHY_STATUS_READ_ERROR;
+  }
+
+  return status;
+}
+
+
+/**
+  * @brief  Disable IT source.
+  * @param  pObj: Pointer to device object.
+  * @param  Interrupt: IT source to be disabled
+  *         should be a value or a combination of MISR1 interrupts
+  * @retval USER_PHY_STATUS_OK  if OK
+  *         USER_PHY_STATUS_READ_ERROR if connot read register
+  *         USER_PHY_STATUS_WRITE_ERROR if connot write to register
+  */
+int32_t USER_PHY_DisableIT_MISR1(user_phy_Object_t *pObj, uint32_t Interrupt)
+{
+  uint32_t readval = 0;
+  int32_t status = USER_PHY_STATUS_OK;
+
+  if(pObj->IO.ReadReg(pObj->DevAddr, USER_PHY_MISR1, &readval) >= 0)
+  {
+    readval &= ~Interrupt;
+
+    /* Apply configuration */
+    if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_MISR1, readval) < 0)
+    {
+      status = USER_PHY_STATUS_WRITE_ERROR;
+    }
+  }
+  else
+  {
+    status = USER_PHY_STATUS_READ_ERROR;
+  }
+
+  return status;
+}
+
+/**
+  * @brief  Disable IT source.
+  * @param  pObj: Pointer to device object.
+  * @param  Interrupt: IT source to be disabled
+  *         should be a value or a combination of MISR2 interrupts
+  * @retval USER_PHY_STATUS_OK  if OK
+  *         USER_PHY_STATUS_READ_ERROR if connot read register
+  *         USER_PHY_STATUS_WRITE_ERROR if connot write to register
+  */
+int32_t USER_PHY_DisableIT_MISR2(user_phy_Object_t *pObj, uint32_t Interrupt)
+{
+  uint32_t readval = 0;
+  int32_t status = USER_PHY_STATUS_OK;
+
+  if(pObj->IO.ReadReg(pObj->DevAddr, USER_PHY_MISR2, &readval) >= 0)
+  {
+    readval &= ~Interrupt;
+
+    /* Apply configuration */
+    if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_MISR2, readval) < 0)
+    {
+      status = USER_PHY_STATUS_WRITE_ERROR;
+    }
+  }
+  else
+  {
+    status = USER_PHY_STATUS_READ_ERROR;
+  }
+
+  return status;
+}
+
+/**
+  * @brief  Clear IT flag.
+  * @param  pObj: Pointer to device object.
+  * @retval DP83848_STATUS_OK  if OK
+  *         DP83848_STATUS_READ_ERROR if connot read register
+  */
+int32_t USER_PHY_ClearIT(user_phy_Object_t *pObj)
+{
+  uint32_t readval = 0;
+  int32_t status = USER_PHY_STATUS_OK;
+
+  // reading at least MISR2 "should" clear IT flag, but might as well read both?
+  if(pObj->IO.ReadReg(pObj->DevAddr, USER_PHY_MISR1, &readval) < 0)
+  {
+    status =  USER_PHY_STATUS_READ_ERROR;
+  } else if(pObj->IO.ReadReg(pObj->DevAddr, USER_PHY_MISR2, &readval) < 0)
+  {
+	status =  USER_PHY_STATUS_READ_ERROR;
+  }
+
+  return status;
+}
+
+
+/**
+  * @brief  Get IT Flag status.
+  * @param  pObj: Pointer to device object.
+  * @param  Interrupt: IT Flag to be checked,
+  *         should be a value or a combination of MISR1 interrupts
+  * @retval 1 IT flag is SET
+  *         0 IT flag is RESET
+  *         USER_PHY_STATUS_READ_ERROR if connot read register
+  */
+int32_t USER_PHY_GetITStatus_MISR1(user_phy_Object_t *pObj, uint32_t Interrupt)
+{
+  uint32_t readval = 0;
+  int32_t status = 0;
+
+  if(pObj->IO.ReadReg(pObj->DevAddr, USER_PHY_MISR1, &readval) >= 0)
+  {
+    status = ((readval & Interrupt) == Interrupt);
+  }
+  else
+  {
+    status = USER_PHY_STATUS_READ_ERROR;
+  }
+
+  return status;
+}
+
+
+/**
+  * @brief  Get IT Flag status.
+  * @param  pObj: Pointer to device object.
+  * @param  Interrupt: IT Flag to be checked,
+  *         should be a value or a combination of MISR2 interrupts
+  * @retval 1 IT flag is SET
+  *         0 IT flag is RESET
+  *         USER_PHY_STATUS_READ_ERROR if connot read register
+  */
+int32_t USER_PHY_GetITStatus_MISR2(user_phy_Object_t *pObj, uint32_t Interrupt)
+{
+  uint32_t readval = 0;
+  int32_t status = 0;
+
+  if(pObj->IO.ReadReg(pObj->DevAddr, USER_PHY_MISR2, &readval) >= 0)
+  {
+    status = ((readval & Interrupt) == Interrupt);
+  }
+  else
+  {
+    status = USER_PHY_STATUS_READ_ERROR;
+  }
+
+  return status;
+}
 
 /* USER CODE END 1 */

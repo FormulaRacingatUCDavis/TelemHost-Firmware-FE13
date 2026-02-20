@@ -191,6 +191,12 @@ SECTIONS
     . = ABSOLUTE(0x2004C0A0);
     *(.TxDecripSection)
   } >RAM
+  
+  .xsens_sec (NOLOAD) :
+  {
+  	. = ABSOLUTE(0x2004CA00);
+  	*(.XsensRxBufSection)
+  } >RAM
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
 }

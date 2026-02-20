@@ -103,14 +103,14 @@ static const mdata2_decode_rules_t xid_decode_table[] = {
     { XDI_RAW_ACC_GYRO_MAG_TEMP, XSENS_EVT_RAW_ACC_GYRO_MAG_TEMP, XSENS_EVT_TYPE_NONE },
     { XDI_RAW_GYRO_TEMP, XSENS_EVT_RAW_GYRO_TEMP, XSENS_EVT_TYPE_NONE },
     { XDI_MAGNETIC_FIELD, XSENS_EVT_MAGNETIC, XSENS_EVT_TYPE_FLOAT3 },
-    { XDI_STATUS_BYTE, XSENS_EVT_STATUS_BYTE, XSENS_EVT_TYPE_U8 }, //done
-    { XDI_STATUS_WORD, XSENS_EVT_STATUS_WORD, XSENS_EVT_TYPE_U32 },//done
-    { XDI_DEVICE_ID, XSENS_EVT_DEVICE_ID, XSENS_EVT_TYPE_U32 },//done
-    { XDI_LOCATION_ID, XSENS_EVT_LOCATION_ID, XSENS_EVT_TYPE_U16 },//done
+    { XDI_STATUS_BYTE, XSENS_EVT_STATUS_BYTE, XSENS_EVT_TYPE_U8 },
+    { XDI_STATUS_WORD, XSENS_EVT_STATUS_WORD, XSENS_EVT_TYPE_U32 },
+    { XDI_DEVICE_ID, XSENS_EVT_DEVICE_ID, XSENS_EVT_TYPE_U32 },
+    { XDI_LOCATION_ID, XSENS_EVT_LOCATION_ID, XSENS_EVT_TYPE_U16 },
     { XDI_POSITION_ECEF, XSENS_EVT_POSITION_ECEF, XSENS_EVT_TYPE_FLOAT3 },
-    { XDI_LAT_LON, XSENS_EVT_LAT_LON, XSENS_EVT_TYPE_FLOAT2 }, //done
-    { XDI_ALTITUDE_ELLIPSOID, XSENS_EVT_ALTITUDE_ELLIPSOID, XSENS_EVT_TYPE_FLOAT },//done
-    { XDI_VELOCITY_XYZ, XSENS_EVT_VELOCITY_XYZ, XSENS_EVT_TYPE_FLOAT3 },//done
+    { XDI_LAT_LON, XSENS_EVT_LAT_LON, XSENS_EVT_TYPE_FLOAT2 },
+    { XDI_ALTITUDE_ELLIPSOID, XSENS_EVT_ALTITUDE_ELLIPSOID, XSENS_EVT_TYPE_FLOAT },
+    { XDI_VELOCITY_XYZ, XSENS_EVT_VELOCITY_XYZ, XSENS_EVT_TYPE_FLOAT3 },
 };
 
 // With the 'isolated' field from the rest of the payload,
@@ -187,9 +187,25 @@ void xsens_mdata2_decode_field( mdata2_packet_t *output, callback_event_t evt_cb
                 break;
 
             default:
-                // There's an error or not supported, return a 'null' type?
+                // Special cases
                 value.type = XSENS_EVT_TYPE_NONE;
-                break;
+
+                switch ( decode_rule->xid )
+                {
+                	case XDI_UTC_TIME:
+                		value.data.utc_time.nanoseconds = xsens_coalesce_32BE_32LE( &output->payload[0] );
+                		value.data.utc_time.year = xsens_coalesce_16BE_16LE( &output->payload[4] );
+                		value.data.utc_time.month = output->payload[6];
+                		value.data.utc_time.day = output->payload[7];
+                		value.data.utc_time.hour = output->payload[8];
+                		value.data.utc_time.minute = output->payload[9];
+                		value.data.utc_time.second = output->payload[10];
+                		value.data.utc_time.flags = output->payload[11];
+                		break;
+                	default:
+                		// Leave space for other cases, but for us we only care about UTC time
+                		break;
+                }
         }
 
         // Call the user-callback with the transformed data

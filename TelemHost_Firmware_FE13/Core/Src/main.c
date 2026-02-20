@@ -775,15 +775,12 @@ void MainEntry(void *argument)
 //	 test_data[7] = 8;
 //	 CAN_Send(&hcan1, 0x0f, test_data, 8); //TODO REMOVE LATER
 //	 CAN_Send(&hcan2, 0x0f, test_data, 8);
-	 HAL_Delay(10);
 //	 sd_card_write_data(0x01, test_data);
 
 	//print("USB alive!\n");
 //	HAL_UART_Transmit(&huart3, test_data, 8, 1000);
 
 	Xsens_Update(&huart2);
-
-	osDelay(10);
 	HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);
   }
 
@@ -868,6 +865,20 @@ void MPU_Config(void)
   MPU_InitStruct.Size = MPU_REGION_SIZE_1MB;
   MPU_InitStruct.AccessPermission = MPU_REGION_NO_ACCESS;
   MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+  /** Initializes and configures the Region and the memory to be protected
+  */
+  MPU_InitStruct.Number = MPU_REGION_NUMBER3;
+  MPU_InitStruct.BaseAddress = 0x2004C000;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_16KB;
+  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL1;
+  MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+  MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
+  MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+  MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
   /* Enables the MPU */

@@ -67,6 +67,18 @@ typedef enum
     XSENS_EVT_TYPE_FLOAT9,
 } XsensEventDataType_t;
 
+typedef struct
+{
+	uint32_t nanoseconds;
+	uint16_t year;
+	uint8_t month;
+	uint8_t day;
+	uint8_t hour;
+	uint8_t minute;
+	uint8_t second;
+	uint8_t flags;
+} XsensUTCTime_t;
+
 // Unionised data sent to user callback
 typedef struct
 {
@@ -81,6 +93,8 @@ typedef struct
         float    f4x3[3];
         float    f4x4[4];
         float    f4x9[9];
+
+        XsensUTCTime_t utc_time;
     } data;
 } XsensEventData_t;
 

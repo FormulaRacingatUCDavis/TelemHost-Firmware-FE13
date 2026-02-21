@@ -104,6 +104,24 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 				uint8_t minute = mtdata->data.utc_time.minute;
 				uint8_t second = mtdata->data.utc_time.second;
 				uint8_t flags = mtdata->data.utc_time.flags;
+
+				uint8_t data[12] = {0};
+                data[0] = (nanoseconds >> 24) & 0xFF;
+                data[1] = (nanoseconds >> 16) & 0xFF;
+                data[2] = (nanoseconds >> 8)  & 0xFF;
+                data[3] = (nanoseconds >> 0)  & 0xFF;
+
+                data[4] = HI8(year);
+                data[5] = LO8(year);
+
+                data[6] = month;
+                data[7] = day;
+                data[8] = hour;
+                data[9] = minute;
+                data[10] = second;
+                data[11] = flags;
+
+                sd_card_write_data(0x101, data);
 			}
 			break;
 
@@ -111,6 +129,12 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 			if ( mtdata->type == XSENS_EVT_TYPE_U16 )
 			{
 				uint16_t packet_count = mtdata->data.u2;
+				uint8_t data[4] = {0};
+
+				data[0] = HI8(packet_count);
+				data[1] = LO8(packet_count);
+
+				sd_card_write_data(0x102, data);
 			}
 			break;
 
@@ -121,13 +145,15 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 				int16_t ang_y = (int16_t)(mtdata->data.f4x3[1] * 100);
 				int16_t ang_z = (int16_t)(mtdata->data.f4x3[2] * 100);
 
-				uint8_t data[8];
+				uint8_t data[8] = {0};
 				data[0] = HI8(ang_x);
 				data[1] = LO8(ang_x);
 				data[2] = HI8(ang_y);
 				data[3] = LO8(ang_y);
 				data[4] = HI8(ang_z);
 				data[5] = LO8(ang_z);
+
+				sd_card_write_data(0x106, data);
 			}
 			break;
 
@@ -135,6 +161,14 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 			if (mtdata->type == XSENS_EVT_TYPE_U32 )
 			{
 				uint32_t pressure = mtdata->data.u4;
+
+				uint8_t data[4] = {0};
+                data[0] = (pressure >> 24) & 0xFF;
+                data[1] = (pressure >> 16) & 0xFF;
+                data[2] = (pressure >> 8)  & 0xFF;
+                data[3] = (pressure >> 0)  & 0xFF;
+
+                sd_card_write_data(0x110, data);
 			}
 			break;
 
@@ -177,7 +211,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                 data[5] = (lon >> 16) & 0xFF;
                 data[6] = (lon >> 8)  & 0xFF;
                 data[7] = (lon >> 0)  & 0xFF;
-                sd_card_write_data(0x125, data);
+                sd_card_write_data(0x127, data);
             }
             break;
 
@@ -208,13 +242,15 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 				int16_t acc_y = (int16_t)(mtdata->data.f4x3[1] * 100);
 				int16_t acc_z = (int16_t)(mtdata->data.f4x3[2] * 100);
 
-				uint8_t data[8];
+				uint8_t data[8] = {0};
 				data[0] = HI8(acc_x);
 				data[1] = LO8(acc_x);
 				data[2] = HI8(acc_y);
 				data[3] = LO8(acc_y);
 				data[4] = HI8(acc_z);
 				data[5] = LO8(acc_z);
+
+				sd_card_write_data(0x114, data);
 			}
 			break;
 
@@ -235,7 +271,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 				data[5] = LO8(freeAccZ);
 
 				//CAN_Send(&hcan1, 0x101, data, 6);
-				sd_card_write_data(0x114, data);
+				sd_card_write_data(0x111, data);
 			}
 			break;
 
@@ -247,7 +283,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 
 				data[0] = status_byte;
 
-				sd_card_write_data(0x120, data);
+				sd_card_write_data(0x122, data);
 			}
 			break;
 
@@ -262,7 +298,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 				data[2] = (status_word >> 8)  & 0xFF;
 				data[3] = (status_word >> 0)  & 0xFF;
 
-				sd_card_write_data(0x121, data);
+				sd_card_write_data(0x123, data);
 			}
 			break;
 
@@ -277,7 +313,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 				data[2] = (dev_id >> 8)  & 0xFF;
 				data[3] = (dev_id >> 0)  & 0xFF;
 
-				sd_card_write_data(0x122, data);
+				sd_card_write_data(0x124, data);
 			}
 			break;
 
@@ -290,7 +326,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 				data[0] = HI8(location);
 				data[1] = LO8(location);
 
-				sd_card_write_data(0x123, data);
+				sd_card_write_data(0x125, data);
 			}
 			break;
 
@@ -415,7 +451,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 				data[5] = LO8(magZ);
 
 				//CAN_Send(&hcan1, 0x101, data, 6);
-				sd_card_write_data(0x119, data);
+				sd_card_write_data(0x121, data);
 			}
 			break;
 
@@ -428,7 +464,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 				data[0] = HI8(alt);
 				data[1] = LO8(alt);
 
-				sd_card_write_data(0x126, data);
+				sd_card_write_data(0x128, data);
 			}
 			break;
 
@@ -447,7 +483,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 				data[4] = HI8(vel_z);
 				data[5] = LO8(vel_z);
 
-				sd_card_write_data(0x127, data);
+				sd_card_write_data(0x129, data);
 			}
 			break;
 

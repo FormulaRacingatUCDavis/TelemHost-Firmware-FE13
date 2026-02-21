@@ -53,7 +53,6 @@ void Xsens_Update(UART_HandleTypeDef* h_uart){
 	}
 
 	uint32_t b = Serial_BytesAvailable(&serial);
-
 	for(uint32_t i = 0; i < b; i++){
 //		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
 
@@ -89,7 +88,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
     //     float    f4x9[9];
     // } data;
 
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
 
     switch( event )
     {
@@ -175,23 +174,23 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
     	case XSENS_EVT_DELTA_Q:
 			if( mtdata->type == XSENS_EVT_TYPE_FLOAT4 )
 			{
-			  int16_t delta1 = (int16_t)(mtdata->data.f4x4[0] * 100);
-			  int16_t delta2 = (int16_t)(mtdata->data.f4x4[1] * 100);
-			  int16_t delta3 = (int16_t)(mtdata->data.f4x4[2] * 100);
-			  int16_t delta4 = (int16_t)(mtdata->data.f4x4[3] * 100);
+				int16_t delta1 = (int16_t)(mtdata->data.f4x4[0] * 100);
+				int16_t delta2 = (int16_t)(mtdata->data.f4x4[1] * 100);
+				int16_t delta3 = (int16_t)(mtdata->data.f4x4[2] * 100);
+				int16_t delta4 = (int16_t)(mtdata->data.f4x4[3] * 100);
 
-			  uint8_t data[8] = {0};
-			  data[0] = HI8(delta1);
-			  data[1] = LO8(delta1);
-			  data[2] = HI8(delta2);
-			  data[3] = LO8(delta2);
-			  data[4] = HI8(delta3);
-			  data[5] = LO8(delta3);
-			  data[6] = HI8(delta4);
-			  data[7] = LO8(delta4);
+				uint8_t data[8] = {0};
+				data[0] = HI8(delta1);
+				data[1] = LO8(delta1);
+				data[2] = HI8(delta2);
+				data[3] = LO8(delta2);
+				data[4] = HI8(delta3);
+				data[5] = LO8(delta3);
+				data[6] = HI8(delta4);
+				data[7] = LO8(delta4);
 
-			  //CAN_Send(&hcan1, 0x100, data, 6);
-			  sd_card_write_data(0x112, data);
+				//CAN_Send(&hcan1, 0x100, data, 6);
+				sd_card_write_data(0x112, data);
 			}
 			break;
 

@@ -68,6 +68,7 @@ TIM_HandleTypeDef htim7;
 
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
+DMA_HandleTypeDef hdma_usart2_rx;
 
 /* Definitions for DashboardMain */
 osThreadId_t DashboardMainHandle;
@@ -81,7 +82,7 @@ osThreadId_t SDCardHandle;
 const osThreadAttr_t SDCard_attributes = {
   .name = "SDCard",
   .stack_size = 2048 * 4,
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
 
@@ -634,8 +635,7 @@ static void MX_USART3_UART_Init(void)
   huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart3.Init.OverSampling = UART_OVERSAMPLING_16;
   huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_SWAP_INIT;
-  huart3.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
+  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
   if (HAL_UART_Init(&huart3) != HAL_OK)
   {
     Error_Handler();
@@ -654,8 +654,12 @@ static void MX_DMA_Init(void)
 
   /* DMA controller clock enable */
   __HAL_RCC_DMA2_CLK_ENABLE();
+  __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
+  /* DMA1_Stream5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
   /* DMA2_Stream3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
@@ -718,11 +722,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(HEARTBEAT_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : CARD_DETECT_Pin */
-  GPIO_InitStruct.Pin = CARD_DETECT_Pin;
+  /*Configure GPIO pin : Card_Detect_Pin */
+  GPIO_InitStruct.Pin = Card_Detect_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(CARD_DETECT_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(Card_Detect_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : GASP_INTERRUPT_Pin */
   GPIO_InitStruct.Pin = GASP_INTERRUPT_Pin;
@@ -809,7 +813,7 @@ void SDCardEntry(void *argument)
 	/* Infinite loop */
 	while (1)
 	{
-		osDelay(5);
+//		osDelay(5);
 //		HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);
 //		static uint8_t n = 0;
 //		uint8_t d[] = { 0, 0, 0, 0, 0, 0, 0, n };

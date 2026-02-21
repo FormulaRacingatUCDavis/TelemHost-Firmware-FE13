@@ -81,8 +81,8 @@ uint8_t traction_control_enable();
 #define XSENS_UART_TX_GPIO_Port GPIOD
 #define XSENS_UART_RX_Pin GPIO_PIN_6
 #define XSENS_UART_RX_GPIO_Port GPIOD
-#define CARD_DETECT_Pin GPIO_PIN_9
-#define CARD_DETECT_GPIO_Port GPIOG
+#define Card_Detect_Pin GPIO_PIN_9
+#define Card_Detect_GPIO_Port GPIOG
 #define GASP_INTERRUPT_Pin GPIO_PIN_15
 #define GASP_INTERRUPT_GPIO_Port GPIOG
 #define GASP_INTERRUPT_EXTI_IRQn EXTI15_10_IRQn

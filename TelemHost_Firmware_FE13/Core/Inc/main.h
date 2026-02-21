@@ -49,6 +49,8 @@ extern "C" {
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -59,6 +61,8 @@ uint8_t traction_control_enable();
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define LAT_LON_INT_Pin GPIO_PIN_5
+#define LAT_LON_INT_GPIO_Port GPIOE
 #define MON_12V_Pin GPIO_PIN_8
 #define MON_12V_GPIO_Port GPIOF
 #define GPIO1_3V3_Pin GPIO_PIN_9

@@ -30,6 +30,17 @@ volatile uint16_t telem_id = 0;
 volatile uint16_t sg_rear = 0;
 volatile uint16_t max_power = 0;
 
+volatile uint16_t pack0_voltages[24];
+volatile uint16_t pack1_voltages[24];
+volatile uint16_t pack2_voltages[24];
+volatile uint16_t pack3_voltages[24];
+volatile uint16_t pack4_voltages[24];
+volatile uint16_t pack0_temps[16];
+volatile uint16_t pack1_temps[16];
+volatile uint16_t pack2_temps[16];
+volatile uint16_t pack3_temps[16];
+volatile uint16_t pack4_temps[16];
+
 static CAN_RxHeaderTypeDef RxHeader;
 static uint8_t RxData[8];
 
@@ -43,7 +54,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
 
 /************ CAN RX ************/
-
+// TODO ADD CASES FOR NEW IDS AND ADD TO ENUM
 static void save_can_rx_data(CAN_RxHeaderTypeDef rxHeader, uint8_t rxData[]) {
     // gets message and updates values
 	sd_card_write_can_rx(rxHeader, rxData);  // TODO REMOVE
@@ -206,6 +217,73 @@ static void save_can_rx_data(CAN_RxHeaderTypeDef rxHeader, uint8_t rxData[]) {
 		case STRAIN_GAUGE_REAR:
 			sg_rear = rxData[0] << 8;
 			sg_rear += rxData[1];
+			break;
+		case BMS_VOLTAGES:
+			uint8_t pack_num = rxData[0];
+			uint8_t pack_group_index = rxData[1] * 3;
+			switch (pack_num){
+			case 0:
+				pack0_voltages[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 100;
+				pack0_voltages[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 100;
+				pack0_voltages[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 100;
+				break;
+			case 1:
+				pack1_voltages[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 100;
+				pack1_voltages[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 100;
+				pack1_voltages[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 100;
+				break;
+			case 2:
+				pack2_voltages[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 100;
+				pack2_voltages[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 100;
+				pack2_voltages[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 100;
+				break;
+			case 3:
+				pack3_voltages[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 100;
+				pack3_voltages[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 100;
+				pack3_voltages[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 100;
+				break;
+			case 4:
+				pack4_voltages[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 100;
+				pack4_voltages[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 100;
+				pack4_voltages[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 100;
+				break;
+			}
+			break;
+		case BMS_TEMPS:
+			uint8_t pack_num = rxData[0];
+			uint8_t pack_group_index = rxData[1] * 3;
+			switch (pack_num){
+			case 0:
+				pack0_temps[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 1000;
+				if(pack_group_index == 15) break;
+				pack0_temps[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 1000;
+				pack0_temps[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 1000;
+				break;
+			case 1:
+				pack1_temps[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 1000;
+				if(pack_group_index == 15) break;
+				pack1_temps[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 1000;
+				pack1_temps[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 1000;
+				break;
+			case 2:
+				pack2_temps[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 1000;
+				if(pack_group_index == 15) break;
+				pack2_temps[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 1000;
+				pack2_temps[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 1000;
+				break;
+			case 3:
+				pack3_temps[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 1000;
+				if(pack_group_index == 15) break;
+				pack3_temps[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 1000;
+				pack3_temps[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 1000;
+				break;
+			case 4:
+				pack4_temps[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 1000;
+				if(pack_group_index == 15) break;
+				pack4_temps[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 1000;
+				pack4_temps[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 1000;
+				break;
+			}
 			break;
 		default:
 			// no valid input received

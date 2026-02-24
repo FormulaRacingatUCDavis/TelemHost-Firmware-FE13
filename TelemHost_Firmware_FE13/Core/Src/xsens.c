@@ -23,6 +23,8 @@ extern CAN_HandleTypeDef hcan1;
 #define HI8(x) ((x>>8)&0xFF)
 #define LO8(x) (x&0xFF);
 
+uint8_t LAT_LON_DATA[8] = {0};
+
 // PRIVATE FUNCTION PROTOTYPES
 void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata);
 
@@ -199,17 +201,18 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
             {
                 int32_t lat = (int32_t)(mtdata->data.f4x2[0] * 10000);
                 int32_t lon = (int32_t)(mtdata->data.f4x2[1] * 10000);
-                uint8_t data[8] = {0};
+//                uint8_t data[8] = {0};
 
-                data[0] = (lat >> 24) & 0xFF;
-                data[1] = (lat >> 16) & 0xFF;
-                data[2] = (lat >> 8)  & 0xFF;
-                data[3] = (lat >> 0)  & 0xFF;
 
-                data[4] = (lon >> 24) & 0xFF;
-                data[5] = (lon >> 16) & 0xFF;
-                data[6] = (lon >> 8)  & 0xFF;
-                data[7] = (lon >> 0)  & 0xFF;
+                LAT_LON_DATA[0] = (lat >> 24) & 0xFF;
+                LAT_LON_DATA[1] = (lat >> 16) & 0xFF;
+                LAT_LON_DATA[2] = (lat >> 8)  & 0xFF;
+                LAT_LON_DATA[3] = (lat >> 0)  & 0xFF;
+
+                LAT_LON_DATA[4] = (lon >> 24) & 0xFF;
+                LAT_LON_DATA[5] = (lon >> 16) & 0xFF;
+                LAT_LON_DATA[6] = (lon >> 8)  & 0xFF;
+                LAT_LON_DATA[7] = (lon >> 0)  & 0xFF;
                 sd_card_write_data(0x127, data);
             }
             break;

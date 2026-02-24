@@ -845,6 +845,8 @@ void MainEntry(void *argument)
 
   // In case we accidentally leave the infinite loop
   osThreadTerminate(osThreadGetId());
+//  HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_1);
+  HAL_TIM_Base_Start_IT(&htim9);
   /* USER CODE END 5 */
 }
 
@@ -967,6 +969,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 1 */
 
   /* USER CODE END Callback 1 */
+
+  if(htim->Instance == TIM9){
+	  if( LAT_LON_DATA[0] != 0){
+		  CAN_SEND(&hcan2, 0x460, LAT_LON_DATA,8);
+	  }
+
+  }
+
 }
 
 /**

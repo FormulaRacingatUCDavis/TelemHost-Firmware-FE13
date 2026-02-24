@@ -12,6 +12,6 @@
 
 //PUBLIC FUNCTION PROTOTYPES
 void Xsens_Update(UART_HandleTypeDef* h_uart);
-
+extern uint8_t LAT_LON_DATA[8];
 
 #endif /* INC_XSENS_H_ */

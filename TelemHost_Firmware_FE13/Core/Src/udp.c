@@ -62,7 +62,7 @@ static void udp_thread(void *arg)
 						/* copy the data into the buffer  */
 						pbuf_take(txBuf, smsg, len);
 
-						// refer the nebuf->pbuf to our pbuf
+						// refer the netbuf->pbuf to our pbuf
 						buf->p = txBuf;
 
 						// broadcast the message

@@ -89,7 +89,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
     //     float    f4x9[9];
     // } data;
 
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
 
     switch( event )
     {

@@ -85,6 +85,13 @@ const osThreadAttr_t SDCard_attributes = {
   .stack_size = 2048 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for UDPServer */
+osThreadId_t UDPServerHandle;
+const osThreadAttr_t UDPServer_attributes = {
+  .name = "UDPServer",
+  .stack_size = 256 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* USER CODE BEGIN PV */
 
 // Keeps track of timer waiting for pre-charging
@@ -110,6 +117,7 @@ static void MX_USART2_UART_Init(void);
 static void MX_TIM9_Init(void);
 void MainEntry(void *argument);
 void SDCardEntry(void *argument);
+void UDPServerEntry(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -127,13 +135,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == GASP_INTERRUPT_Pin) {
 //		sd_card_close_file();
 	}
-}
-
-
-void udpserver_init(void)
-{
-	// create new thread for UDP server
-  sys_thread_new("udp_thread", udp_thread, NULL, DEFAULT_THREAD_STACKSIZE,osPriorityNormal);
 }
 
 
@@ -227,6 +228,9 @@ int main(void)
 
   /* creation of SDCard */
   SDCardHandle = osThreadNew(SDCardEntry, NULL, &SDCard_attributes);
+
+  /* creation of UDPServer */
+  UDPServerHandle = osThreadNew(UDPServerEntry, NULL, &UDPServer_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -883,6 +887,52 @@ void SDCardEntry(void *argument)
 	sd_card_flush();
 	osThreadTerminate(osThreadGetId());
   /* USER CODE END SDCardEntry */
+}
+
+/* USER CODE BEGIN Header_UDPServerEntry */
+/**
+* @brief Function implementing the UDPServer thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_UDPServerEntry */
+void UDPServerEntry(void *argument)
+{
+  /* USER CODE BEGIN UDPServerEntry */
+	static struct netconn *conn;
+	static struct netbuf *buf;
+	char smsg[200];
+	err_t err;
+	struct pbuf *txBuf;
+
+	/* Create a new connection identifier */
+	conn = netconn_new(NETCONN_UDP);
+
+	if (conn == NULL) {
+		// Failed to create connection
+		osThreadTerminate(osThreadGetId());
+	}
+
+	/* Bind connection to the port 7 */
+	err = netconn_bind(conn, IP_ADDR_ANY, UDP_SERVER_PORT);
+
+	if (err != ERR_OK) {
+		// Failed to bind connection
+		netconn_delete(conn);
+		osThreadTerminate(osThreadGetId());
+	}
+
+	/* Infinite loop */
+	for(;;)
+	{
+		udp_update(conn, buf, smsg, &err, txBuf);
+		osDelay(1);
+	}
+
+  	// In case we accidentally leave the infinite loop
+	netconn_delete(conn);
+	osThreadTerminate(osThreadGetId());
+  /* USER CODE END UDPServerEntry */
 }
 
  /* MPU Configuration */

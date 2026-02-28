@@ -788,6 +788,9 @@ void MainEntry(void *argument)
 	//print("USB alive!\n");
 //	HAL_UART_Transmit(&huart3, test_data, 8, 1000);
 
+	// TODO REMOVE
+	print_cooling_data();
+
 	Xsens_Update(&huart2);
 	HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);
   }

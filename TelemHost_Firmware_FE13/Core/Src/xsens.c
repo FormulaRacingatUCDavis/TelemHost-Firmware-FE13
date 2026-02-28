@@ -57,7 +57,7 @@ void Xsens_Update(UART_HandleTypeDef* h_uart){
 //		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
 
 		 xsens_mti_parse(&imu_interface, Serial_GetByte(&serial));
-		 print(rx_buf);
+//		 print(rx_buf);
 
 	}
 }

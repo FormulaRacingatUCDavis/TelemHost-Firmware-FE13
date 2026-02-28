@@ -213,7 +213,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                 LAT_LON_DATA[5] = (lon >> 16) & 0xFF;
                 LAT_LON_DATA[6] = (lon >> 8)  & 0xFF;
                 LAT_LON_DATA[7] = (lon >> 0)  & 0xFF;
-                sd_card_write_data(0x127, data);
+                sd_card_write_data(0x127, LAT_LON_DATA);
             }
             break;
 

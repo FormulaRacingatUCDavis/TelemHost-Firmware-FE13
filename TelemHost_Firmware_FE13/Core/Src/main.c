@@ -971,7 +971,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE END Callback 1 */
 
   if(htim->Instance == TIM9){
-	  if( LAT_LON_DATA[0] != 0){
+	  // check least significant bit because unlikely to be zero once data is sent
+	  if( LAT_LON_DATA[7] != 0){
 		  CAN_SEND(&hcan2, 0x460, LAT_LON_DATA,8);
 	  }
 

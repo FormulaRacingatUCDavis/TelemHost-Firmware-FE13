@@ -40,6 +40,7 @@ volatile uint16_t pack1_temps[16];
 volatile uint16_t pack2_temps[16];
 volatile uint16_t pack3_temps[16];
 volatile uint16_t pack4_temps[16];
+volatile int16_t pei_current;
 
 static CAN_RxHeaderTypeDef RxHeader;
 static uint8_t RxData[8];
@@ -218,6 +219,8 @@ static void save_can_rx_data(CAN_RxHeaderTypeDef rxHeader, uint8_t rxData[]) {
 			sg_rear = rxData[0] << 8;
 			sg_rear += rxData[1];
 			break;
+		case PEI_CURRENT:
+			pei_current = (rxData[0] << 8) | rxData[1];
 		case BMS_VOLTAGES:
 			uint8_t pack_num = rxData[0];
 			uint8_t pack_group_index = rxData[1] * 3;

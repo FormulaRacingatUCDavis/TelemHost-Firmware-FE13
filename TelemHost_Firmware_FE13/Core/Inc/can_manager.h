@@ -33,7 +33,9 @@ typedef enum {
 	MC_INTERNAL_CURRENTS = 0x0A6,
 
 	BMS_VOLTAGES = 0x383,
-	BMS_TEMPS = 0x384
+	BMS_TEMPS = 0x384,
+	PEI_CURRENT = 0x388,
+	HIGH_LEVEL_BMS = 0x382
 } TCAN_ID;
 
 typedef enum {

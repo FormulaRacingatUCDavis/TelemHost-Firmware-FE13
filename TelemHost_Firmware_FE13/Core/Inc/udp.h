@@ -8,7 +8,16 @@
 #ifndef INC_UDP_H_
 #define INC_UDP_H_
 
-static void udp_thread(void *arg);
+#include "lwip.h"
+
+#include "lwip/opt.h"
+
+#include "lwip/api.h"
+#include "lwip/sys.h"
+
+#define UDP_SERVER_PORT 7
+
+void udp_update(struct netconn *conn, struct netbuf *buf, char* smsg, err_t *err, struct pbuf *txBuf);
 
 typedef struct {
 	uint8_t id;

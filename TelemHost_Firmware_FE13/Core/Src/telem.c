@@ -41,10 +41,10 @@ void telem_send(void) {
 		// send packet to ESP32 (uart7)
 //		HAL_StatusTypeDef esp_uart_status = HAL_UART_Transmit(&huart7, (uint8_t*)&p, PACKET_LENGTH, 1000);
 		// send packet to usb as well (usart3)
-		HAL_StatusTypeDef usb_uart_status = HAL_UART_Transmit(&huart3, (uint8_t*)&p, PACKET_LENGTH, 1000);
-		if (usb_uart_status != HAL_OK) {
-			// error sending over usb
-		}
+//		HAL_StatusTypeDef usb_uart_status = HAL_UART_Transmit(&huart3, (uint8_t*)&p, PACKET_LENGTH, 1000);
+//		if (usb_uart_status != HAL_OK) {
+//			// error sending over usb
+//		}
 		telem_id = !telem_id;
 		prev_time = send_time;
 	}

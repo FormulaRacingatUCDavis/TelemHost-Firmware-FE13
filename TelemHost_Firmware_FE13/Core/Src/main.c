@@ -772,24 +772,7 @@ void MainEntry(void *argument)
 	telem_send();
 	//write_rx_to_sd();
 
-//	 uint8_t test_data[8];
-//	 test_data[0] = 1;
-//	 test_data[1] = 2;
-//	 test_data[2] = 3;
-//	 test_data[3] = 4;
-//	 test_data[4] = 5;
-//	 test_data[5] = 6;
-//	 test_data[6] = 7;
-//	 test_data[7] = 8;
-//	 CAN_Send(&hcan1, 0x0f, test_data, 8); //TODO REMOVE LATER
-//	 CAN_Send(&hcan2, 0x0f, test_data, 8);
-//	 sd_card_write_data(0x01, test_data);
 
-	//print("USB alive!\n");
-//	HAL_UART_Transmit(&huart3, test_data, 8, 1000);
-
-	// TODO REMOVE
-	print_cooling_data();
 
 	Xsens_Update(&huart2);
 	HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);

@@ -169,7 +169,7 @@ bool xsens_mti_override_id_handler( uint8_t id, callback_payload_t *user_fn )
 
         if( handler )
         {
-            handler->handler_fn = user_fn;
+            handler->handler_fn = *user_fn;
             return true;
         }
     }

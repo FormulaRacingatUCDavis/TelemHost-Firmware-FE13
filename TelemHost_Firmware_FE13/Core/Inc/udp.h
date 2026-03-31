@@ -21,7 +21,7 @@ void udp_update(struct netconn *conn, struct netbuf *buf, char* smsg, err_t *err
 
 typedef struct {
 	uint8_t id;
-	uint8_t data[8];
+	uint8_t data[16];
 	uint8_t length;
 } UDPMessageFormat_t;
 

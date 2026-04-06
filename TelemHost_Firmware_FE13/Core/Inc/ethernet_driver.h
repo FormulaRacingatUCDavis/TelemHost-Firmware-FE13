@@ -55,6 +55,8 @@ int32_t USER_PHY_DisableIT_MISR2(user_phy_Object_t *pObj, uint32_t Interrupt);
 int32_t USER_PHY_ClearIT(user_phy_Object_t *pObj);
 int32_t USER_PHY_GetITStatus_MISR1(user_phy_Object_t *pObj, uint32_t Interrupt);
 int32_t USER_PHY_GetITStatus_MISR2(user_phy_Object_t *pObj, uint32_t Interrupt);
+int32_t USER_PHY_GenericRegisterEnable(user_phy_Object_t *pObj, uint32_t reg, uint32_t bit);
+int32_t USER_PHY_GenericRegisterDisable(user_phy_Object_t *pObj, uint32_t reg, uint32_t bit);
 
 
 #endif /* INC_ETHERNET_DRIVER_H_ */

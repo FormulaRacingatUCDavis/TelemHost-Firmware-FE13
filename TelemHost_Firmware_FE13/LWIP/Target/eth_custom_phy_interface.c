@@ -763,4 +763,49 @@ int32_t USER_PHY_GetITStatus_MISR2(user_phy_Object_t *pObj, uint32_t Interrupt)
   return status;
 }
 
+int32_t USER_PHY_GenericRegisterEnable(user_phy_Object_t *pObj, uint32_t reg, uint32_t bit) {
+  uint32_t readval = 0;
+  int32_t status = USER_PHY_STATUS_OK;
+
+  if(pObj->IO.ReadReg(pObj->DevAddr, reg, &readval) >= 0)
+  {
+	readval |= bit;
+
+	/* Apply configuration */
+	if(pObj->IO.WriteReg(pObj->DevAddr, reg, readval) < 0)
+	{
+	  status =  USER_PHY_STATUS_WRITE_ERROR;
+	}
+  }
+  else
+  {
+	status = USER_PHY_STATUS_READ_ERROR;
+  }
+
+  return status;
+}
+
+int32_t USER_PHY_GenericRegisterDisable(user_phy_Object_t *pObj, uint32_t reg, uint32_t bit)
+{
+  uint32_t readval = 0;
+  int32_t status = USER_PHY_STATUS_OK;
+
+  if(pObj->IO.ReadReg(pObj->DevAddr, reg, &readval) >= 0)
+  {
+    readval &= ~bit;
+
+    /* Apply configuration */
+    if(pObj->IO.WriteReg(pObj->DevAddr, reg, readval) < 0)
+    {
+      status =  USER_PHY_STATUS_WRITE_ERROR;
+    }
+  }
+  else
+  {
+    status = USER_PHY_STATUS_READ_ERROR;
+  }
+
+  return status;
+}
+
 /* USER CODE END 1 */

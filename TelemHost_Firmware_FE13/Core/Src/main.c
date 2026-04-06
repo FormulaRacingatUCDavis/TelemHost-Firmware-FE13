@@ -35,6 +35,7 @@
 #include "serial_print.h"
 #include "config.h"
 #include "udp.h"
+#include "ethernet_driver.h"
 
 
 /* USER CODE END Includes */
@@ -98,6 +99,7 @@ volatile unsigned int precharge_timer_ms = 0;
 volatile uint8_t init_fault_cleared = 0;
 extern uint32_t torque_req;
 
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -127,6 +129,12 @@ void UDPServerEntry(void *argument);
 uint8_t shutdown_closed() {
     if (estop_flags) return 0;
     return (shutdown_flags & 0b00111000) == 0b00111000;
+}
+
+void ethernet_phy_init(user_phy_Object_t* pObj) {
+	USER_PHY_Init(pObj);
+	USER_PHY_GenericRegisterEnable(pObj, 0x19, 1 << 15); // enable auto MDIX in PHYCR
+	USER_PHY_GenericRegisterDisable(pObj, 0x19, 1 << 5); // green LED function
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
@@ -762,6 +770,8 @@ void MainEntry(void *argument)
   /* init code for LWIP */
   MX_LWIP_Init();
   /* USER CODE BEGIN 5 */
+  user_phy_Object_t phyObj;
+  ethernet_phy_init(&phyObj);
 
   /* Infinite loop */
   for(;;)
@@ -771,8 +781,6 @@ void MainEntry(void *argument)
 	// zsend data to ESP32
 	telem_send();
 	//write_rx_to_sd();
-
-
 
 	Xsens_Update(&huart2);
 	HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);

@@ -305,7 +305,6 @@ __weak uint8_t BSP_SD_IsDetected(void)
   {
     status = SD_NOT_PRESENT;
   }
-  status = SD_PRESENT;
 
   return status;
 }

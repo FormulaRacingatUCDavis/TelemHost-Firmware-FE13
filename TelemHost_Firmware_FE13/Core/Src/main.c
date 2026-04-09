@@ -36,6 +36,8 @@
 #include "config.h"
 #include "udp.h"
 
+#include "mqtt_conn.h"
+
 
 /* USER CODE END Includes */
 
@@ -251,6 +253,16 @@ int main(void)
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
+}
+
+/**
+ * @brief internet and mqtt connection
+ */
+void Connect_Init(){
+	int rc = mqtt_conn_init();
+	if (rc != 0) {
+		/* MQTT connection initiation failed */
+	}
 }
 
 /**
@@ -827,6 +839,12 @@ void SDCardEntry(void *argument)
 /* USER CODE END Header_UDPServerEntry */
 void UDPServerEntry(void *argument)
 {
+	/* Wait for LwIP / DHCP to bring up the network interface */
+	osDelay(3000);
+
+	/* Connect to MQTT broker */
+	Connect_Init();
+
   /* USER CODE BEGIN UDPServerEntry */
 	static struct netconn *conn;
 	static struct netbuf *buf;

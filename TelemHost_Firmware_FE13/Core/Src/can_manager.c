@@ -45,8 +45,14 @@ volatile int16_t pei_current;
 uint8_t pack_num;
 uint8_t pack_group_index;
 
+float AVG_DIAGNOSTIC_BMS_DATA;
+
+
 static CAN_RxHeaderTypeDef RxHeader;
 static uint8_t RxData[8];
+
+
+//my task: take the average of the packs and make id and use sd card to write
 
 static void save_can_rx_data(CAN_RxHeaderTypeDef rxHeader, uint8_t rxData[]);
 
@@ -66,14 +72,25 @@ static void save_can_rx_data(CAN_RxHeaderTypeDef rxHeader, uint8_t rxData[]) {
 		case BMS_STATUS_MSG:
 			bms_status = rxData[0];
 			sd_card_write_can_rx(rxHeader, rxData);
+
+
 			break;
 		case DIAGNOSTIC_BMS_DATA:
 			PACK_TEMP = rxData[0];
 			soc = rxData[1];
 			pack_voltage = (rxData[2] << 8);
 			pack_voltage += rxData[3];
+
+
 			sd_card_write_can_rx(rxHeader, rxData);
+
+		AVG_DIAGNOSTIC_BMS_DATA = (float)(PACK_TEMP + soc + pack_voltage) / 3.0f;
+
+
+
 			break;
+
+
 		case PEI_STATUS_MSG:
 			shutdown_flags = rxData[0];
 			sd_card_write_can_rx(rxHeader, rxData);

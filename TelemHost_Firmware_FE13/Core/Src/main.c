@@ -38,6 +38,8 @@
 
 #include "mqtt_conn.h"
 
+#include <wolfmqtt/mqtt_client.h>
+
 
 /* USER CODE END Includes */
 
@@ -92,6 +94,17 @@ const osThreadAttr_t UDPServer_attributes = {
   .name = "UDPServer",
   .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for MQTT_queue */
+osMessageQueueId_t MQTT_queueHandle;
+uint8_t MQTT_queueBuffer[ 16 * sizeof( MQTTMessageFormat_t ) ];
+osMessageQDef_t MQTT_queueControlBlock;
+const osMessageQueueAttr_t MQTT_queue_attributes = {
+  .name = "MQTT_queue",
+  .cb_mem = &MQTT_queueControlBlock,
+  .cb_size = sizeof(MQTT_queueControlBlock),
+  .mq_mem = &MQTT_queueBuffer,
+  .mq_size = sizeof(MQTT_queueBuffer)
 };
 /* USER CODE BEGIN PV */
 
@@ -216,6 +229,10 @@ int main(void)
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
+
+  /* Create the queue(s) */
+  /* creation of MQTT_queue */
+  MQTT_queueHandle = osMessageQueueNew (16, sizeof(MQTTMessageFormat_t), &MQTT_queue_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -852,6 +869,9 @@ void UDPServerEntry(void *argument)
 	err_t err;
 	struct pbuf *txBuf;
 
+	MqttPublish publish;
+	MqttClient client;
+
 	/* Create a new connection identifier */
 	conn = netconn_new(NETCONN_UDP);
 
@@ -869,10 +889,19 @@ void UDPServerEntry(void *argument)
 		osThreadTerminate(osThreadGetId());
 	}
 
+	//init MQTT publish
+	memset(&publish, 0, sizeof(publish));
+	publish.qos = MQTT_QOS_0; //ask victor which quality of service to us (1, 2, or 3)
+	publish.retain = 0;
+	publish.duplicate = 0;
+	publish.topic_name = "TelemHost_Data";
+	publish.buffer = (byte*) smsg;
+
+
 	/* Infinite loop */
 	for(;;)
 	{
-		udp_update(conn, buf, smsg, &err, txBuf);
+		MQTT_update(conn, buf, smsg, &err, txBuf, &MQTT_queueHandle, &publish, &client);
 		osDelay(1);
 	}
 

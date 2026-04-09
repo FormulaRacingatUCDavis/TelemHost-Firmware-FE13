@@ -25,7 +25,7 @@
 word16 packet_id = 0;
 /*-----------------------------------------------------------------------------------*/
 /**** Send RESPONSE every time the queue has some data ******/
-void MQTT_update(struct netconn *conn, struct netbuf *buf, char* smsg, err_t *err, struct pbuf *txBuf, osMessageQueueId_t *MQTT_queueHandle,MqttClient *client, MqttPublish *publish)
+void MQTT_update(struct netconn *conn, struct netbuf *buf, char *smsg, err_t *err, struct pbuf *txBuf, osMessageQueueId_t *MQTT_queueHandle, MqttPublish *publish, MqttClient *client)
 {
 //smsg is a pointer to the specific character??????
 	MQTTMessageFormat_t recievedData;
@@ -50,7 +50,7 @@ void MQTT_update(struct netconn *conn, struct netbuf *buf, char* smsg, err_t *er
 	publish->packet_id = ++packet_id;
 
 	//PUBLISH DATA
-	int rc = MqttClient_Publish(&client, &publish);
+	int rc = MqttClient_Publish(client, publish);
 
 	if (rc != MQTT_CODE_SUCCESS) {
 	//error

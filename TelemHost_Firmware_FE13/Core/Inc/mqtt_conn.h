@@ -42,10 +42,10 @@ typedef struct _MqttNetCtx {
     int fd;  /* LwIP socket file descriptor */
 } MqttNetCtx;
 
-MqttClient  mqtt_client;
-MqttNet     mqtt_net;
-MqttNetCtx  mqtt_net_ctx;
-MqttConnect mqtt_connect;
+extern MqttClient  mqtt_client;
+extern MqttNet     mqtt_net;
+extern MqttNetCtx  mqtt_net_ctx;
+extern MqttConnect mqtt_connect;
 
 /**
  * @brief  Initialize wolfMQTT client, open TCP socket, and perform

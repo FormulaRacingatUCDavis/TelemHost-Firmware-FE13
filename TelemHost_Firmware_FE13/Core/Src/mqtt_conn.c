@@ -32,6 +32,11 @@ static volatile int mqtt_connected = 0;
 /*  LwIP Socket Network Callbacks for wolfMQTT                        */
 /* ================================================================== */
 
+MqttClient  mqtt_client;
+MqttNet     mqtt_net;
+MqttNetCtx  mqtt_net_ctx;
+MqttConnect mqtt_connect;
+
 /**
  * @brief  Open a TCP socket and connect to the broker.
  */

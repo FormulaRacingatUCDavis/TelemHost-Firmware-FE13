@@ -55,6 +55,8 @@
 #define DP83822_ANER_LP_AUTONEG_ABLE        ((uint16_t)0x0000U) // Link Partner Auto-Negotiation Able
 
 
+#define USER_PHY_REGCR			((uint16_t)0x000DU) // REGCR, used for extended registers
+#define USER_PHY_ADDAR			((uint16_t)0x000EU) // ADDAR, used for extended registers
 
 /* USER CODE END PD */
 
@@ -763,13 +765,13 @@ int32_t USER_PHY_GetITStatus_MISR2(user_phy_Object_t *pObj, uint32_t Interrupt)
   return status;
 }
 
-int32_t USER_PHY_GenericRegisterEnable(user_phy_Object_t *pObj, uint32_t reg, uint32_t bit) {
+int32_t USER_PHY_GenericRegisterEnable(user_phy_Object_t *pObj, uint32_t reg, uint32_t bitmask) {
   uint32_t readval = 0;
   int32_t status = USER_PHY_STATUS_OK;
 
   if(pObj->IO.ReadReg(pObj->DevAddr, reg, &readval) >= 0)
   {
-	readval |= bit;
+	readval |= bitmask;
 
 	/* Apply configuration */
 	if(pObj->IO.WriteReg(pObj->DevAddr, reg, readval) < 0)
@@ -785,14 +787,14 @@ int32_t USER_PHY_GenericRegisterEnable(user_phy_Object_t *pObj, uint32_t reg, ui
   return status;
 }
 
-int32_t USER_PHY_GenericRegisterDisable(user_phy_Object_t *pObj, uint32_t reg, uint32_t bit)
+int32_t USER_PHY_GenericRegisterDisable(user_phy_Object_t *pObj, uint32_t reg, uint32_t bitmask)
 {
   uint32_t readval = 0;
   int32_t status = USER_PHY_STATUS_OK;
 
   if(pObj->IO.ReadReg(pObj->DevAddr, reg, &readval) >= 0)
   {
-    readval &= ~bit;
+    readval &= ~bitmask;
 
     /* Apply configuration */
     if(pObj->IO.WriteReg(pObj->DevAddr, reg, readval) < 0)
@@ -807,5 +809,129 @@ int32_t USER_PHY_GenericRegisterDisable(user_phy_Object_t *pObj, uint32_t reg, u
 
   return status;
 }
+
+
+int32_t USER_PHY_ExtendedRegisterWrite(user_phy_Object_t *pObj, uint32_t reg, uint32_t value) {
+  int32_t status = USER_PHY_STATUS_OK;
+
+  // write to REGCR (address function field = 0b00, DEV AD = 0b1111 -> 0x001F)
+  if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_REGCR, 0x001F) >= 0)
+  {
+	  // write desired register address to ADDAR
+	  if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_ADDAR, reg) >= 0) {
+
+		  // write 0x401F (data, no post increment function field = 01, DEVAD = 31) to register REGCR
+		  if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_REGCR, 0x401F) >= 0) {
+
+			  // write the content of the desired extended register set to register ADDAR
+			  if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_ADDAR, value) >= 0) {
+				  // success!
+
+			  } else { // failed to write desired data (`value` parameter) to ADDAR
+				  status = USER_PHY_STATUS_WRITE_ERROR;
+			  }
+
+		  } else { // failed to write 0x401F to REGCR
+			  status = USER_PHY_STATUS_WRITE_ERROR;
+		  }
+
+	  } else { // failed to write `reg` into ADDAR
+		  status = USER_PHY_STATUS_WRITE_ERROR;
+	  }
+
+  } else { // failed to write 0x001F to REGCR
+	  status = USER_PHY_STATUS_WRITE_ERROR;
+  }
+
+  return status;
+}
+
+int32_t USER_PHY_ExtendedRegisterEnable(user_phy_Object_t *pObj, uint32_t reg, uint32_t bitmask) {
+  uint32_t readval = 0;
+  int32_t status = USER_PHY_STATUS_OK;
+
+  // write to REGCR (address function field = 0b00, DEV AD = 0b1111 -> 0x001F)
+  if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_REGCR, 0x001F) >= 0)
+  {
+	  // write desired register address to ADDAR
+	  if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_ADDAR, reg) >= 0) {
+
+		  // write 0x401F (data, no post increment function field = 01, DEVAD = 31) to register REGCR
+		  if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_REGCR, 0x401F) >= 0) {
+
+			  // read the content of the desired extended register set from register ADDAR
+			  if(pObj->IO.ReadReg(pObj->DevAddr, USER_PHY_ADDAR, &readval) >= 0) {
+				  readval |= bitmask;
+				  // write back into ADDAR
+				  if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_ADDAR, readval) >= 0) {
+					  // success!
+
+				  } else { // failed to write back the new config into ADDAR
+					  status = USER_PHY_STATUS_WRITE_ERROR;
+				  }
+
+			  } else { // failed to read original data from ADDAR
+				  status = USER_PHY_STATUS_READ_ERROR;
+			  }
+
+		  } else { // failed to write 0x401F to REGCR
+			  status = USER_PHY_STATUS_WRITE_ERROR;
+		  }
+
+	  } else { // failed to write `reg` into ADDAR
+		  status = USER_PHY_STATUS_WRITE_ERROR;
+	  }
+
+  } else { // failed to write 0x001F to REGCR
+	  status = USER_PHY_STATUS_WRITE_ERROR;
+  }
+
+  return status;
+}
+
+
+int32_t USER_PHY_ExtendedRegisterDisable(user_phy_Object_t *pObj, uint32_t reg, uint32_t bitmask) {
+  uint32_t readval = 0;
+  int32_t status = USER_PHY_STATUS_OK;
+
+  // write to REGCR (address function field = 0b00, DEV AD = 0b1111 -> 0x001F)
+  if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_REGCR, 0x001F) >= 0)
+  {
+	  // write desired register address to ADDAR
+	  if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_ADDAR, reg) >= 0) {
+
+		  // write 0x401F (data, no post increment function field = 01, DEVAD = 31) to register REGCR
+		  if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_REGCR, 0x401F) >= 0) {
+
+			  // read the content of the desired extended register set from register ADDAR
+			  if(pObj->IO.ReadReg(pObj->DevAddr, USER_PHY_ADDAR, &readval) >= 0) {
+				  readval &= ~bitmask;
+				  // write back into ADDAR
+				  if(pObj->IO.WriteReg(pObj->DevAddr, USER_PHY_ADDAR, readval) >= 0) {
+					  // success!
+
+				  } else { // failed to write back the new config into ADDAR
+					  status = USER_PHY_STATUS_WRITE_ERROR;
+				  }
+
+			  } else { // failed to read original data from ADDAR
+				  status = USER_PHY_STATUS_READ_ERROR;
+			  }
+
+		  } else { // failed to write 0x401F to REGCR
+			  status = USER_PHY_STATUS_WRITE_ERROR;
+		  }
+
+	  } else { // failed to write `reg` into ADDAR
+		  status = USER_PHY_STATUS_WRITE_ERROR;
+	  }
+
+  } else { // failed to write 0x001F to REGCR
+	  status = USER_PHY_STATUS_WRITE_ERROR;
+  }
+
+  return status;
+}
+
 
 /* USER CODE END 1 */

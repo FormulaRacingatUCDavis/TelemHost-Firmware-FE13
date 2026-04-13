@@ -283,7 +283,7 @@ static void low_level_init(struct netif *netif)
   /* Set PHY IO functions */
 	USER_PHY_RegisterBusIO(&USER_PHY, &USER_PHY_IOCtx);
 
-	/* Initialize the DP83848 ETH PHY */
+	/* Initialize the DP83822 ETH PHY */
 	if(USER_PHY_Init(&USER_PHY) != USER_PHY_STATUS_OK)
 	{
 	  netif_set_link_down(netif);

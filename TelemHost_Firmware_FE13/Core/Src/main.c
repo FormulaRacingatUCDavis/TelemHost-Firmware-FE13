@@ -131,12 +131,6 @@ uint8_t shutdown_closed() {
     return (shutdown_flags & 0b00111000) == 0b00111000;
 }
 
-void ethernet_phy_init(user_phy_Object_t* pObj) {
-	USER_PHY_Init(pObj);
-	USER_PHY_GenericRegisterEnable(pObj, 0x19, 1 << 15); // enable auto MDIX in PHYCR
-	USER_PHY_GenericRegisterDisable(pObj, 0x19, 1 << 5); // green LED function
-	USER_PHY_ExtendedRegisterDisable(pObj, 0x460, 1 << 10); // use orange LED for RX/TX activity
-}
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == GASP_INTERRUPT_Pin) {
@@ -771,8 +765,6 @@ void MainEntry(void *argument)
   /* init code for LWIP */
   MX_LWIP_Init();
   /* USER CODE BEGIN 5 */
-  user_phy_Object_t phyObj;
-  ethernet_phy_init(&phyObj);
 
   /* Infinite loop */
   for(;;)

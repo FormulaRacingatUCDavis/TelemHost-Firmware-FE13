@@ -341,8 +341,9 @@ static void low_level_init(struct netif *netif)
 
 	  /* POST CONFIG USER SETTINGS */
 	  USER_PHY_GenericRegisterEnable(&USER_PHY, 0x19, 1 << 15); // enable auto MDIX in PHYCR
-	  USER_PHY_GenericRegisterDisable(&USER_PHY, 0x19, 1 << 5); // green LED function
-	  USER_PHY_ExtendedRegisterDisable(&USER_PHY, 0x460, 1 << 10); // use orange LED for RX/TX activity
+	  USER_PHY_GenericRegisterEnable(&USER_PHY, 0x25, 0b11); // route MLED to LED_0 (green LED)
+	  USER_PHY_GenericRegisterDisable(&USER_PHY, 0x19, 1 << 5); // green LED function (on for link)
+	  USER_PHY_ExtendedRegisterDisable(&USER_PHY, 0x460, 0b101 << 8); // use yellow LED for LINK OK
 
 	  }
 /* USER CODE END low_level_init Code 2 for User BSP */

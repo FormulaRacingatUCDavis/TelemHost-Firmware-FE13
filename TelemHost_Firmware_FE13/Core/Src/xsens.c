@@ -104,21 +104,21 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 				uint8_t second = mtdata->data.utc_time.second;
 				uint8_t flags = mtdata->data.utc_time.flags;
 
-				uint8_t data[12] = {0};
+				uint8_t data[8] = {0};
                 data[0] = (nanoseconds >> 24) & 0xFF;
                 data[1] = (nanoseconds >> 16) & 0xFF;
                 data[2] = (nanoseconds >> 8)  & 0xFF;
                 data[3] = (nanoseconds >> 0)  & 0xFF;
 
-                data[4] = HI8(year);
-                data[5] = LO8(year);
-
-                data[6] = month;
-                data[7] = day;
-                data[8] = hour;
-                data[9] = minute;
-                data[10] = second;
-                data[11] = flags;
+//                data[_] = HI8(year);
+//                data[_] = LO8(year);
+//
+//                data[_] = month;
+//                data[_] = day;
+                data[4] = hour;
+                data[5] = minute;
+                data[6] = second;
+                data[7] = flags;
 
                 sd_card_write_data(0x101, data);
 			}

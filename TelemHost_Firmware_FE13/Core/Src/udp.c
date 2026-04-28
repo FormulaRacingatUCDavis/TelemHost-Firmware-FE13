@@ -12,6 +12,7 @@
 #include "cmsis_os.h"
 #include <wolfmqtt/mqtt_client.h>
 #include "mqtt_conn.h"
+#include <string.h>
 
 //MQTT init and connect
 
@@ -27,33 +28,29 @@ word16 packet_id = 0;
 /**** Send RESPONSE every time the queue has some data ******/
 void MQTT_update(struct netconn *conn, struct netbuf *buf, char *smsg, err_t *err, struct pbuf *txBuf, osMessageQueueId_t *MQTT_queueHandle, MqttPublish *publish, MqttClient *client)
 {
-//smsg is a pointer to the specific character??????
-	MQTTMessageFormat_t recievedData;
-	smsg[0] = '\0';
-	int index = 0;
+	MQTTMessageFormat_t receivedData;
+	smsg[0] = '\0'; // should get overwritten immediately
 
-	osStatus_t status = osMessageQueueGet(*MQTT_queueHandle, &recievedData, NULL, 0U);
+	osStatus_t status = osMessageQueueGet(*MQTT_queueHandle, &receivedData, NULL, 0U);
 
 	if (status == osOK)
 	{
+		publish->buffer_len = strnlen(receivedData.json_string, 128);
 
-		index = sprintf(smsg, "ID: %d, Value:\n", recievedData.id);
-		for (int j = 0; j < recievedData.length; j++) {
-			index += sprintf(smsg + index, "%d", recievedData.data[j]);
+		publish->packet_id = ++packet_id;
+
+		strncpy(smsg, receivedData.json_string, publish->buffer_len);
+		smsg[publish->buffer_len] = '\0'; // strncpy DOES NOT automatically null-terminate
+
+		publish->topic_name = receivedData.topic_name;
+
+		//PUBLISH DATA
+		int rc = MqttClient_Publish(client, publish);
+
+		if (rc != MQTT_CODE_SUCCESS) {
+			//error
 		}
-			index += sprintf(smsg + index, "\n");
 
-		}
-
-	publish->buffer_len = index;
-
-	publish->packet_id = ++packet_id;
-
-	//PUBLISH DATA
-	int rc = MqttClient_Publish(client, publish);
-
-	if (rc != MQTT_CODE_SUCCESS) {
-	//error
 	}
 }
 

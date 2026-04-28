@@ -19,9 +19,8 @@
 #define UDP_SERVER_PORT 7
 
 typedef struct {
-	uint8_t id;
-	uint8_t data[16];
-	uint8_t length;
+	char json_string[128];
+	char topic_name[16];
 } MQTTMessageFormat_t;
 
 

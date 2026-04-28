@@ -894,7 +894,6 @@ void UDPServerEntry(void *argument)
 	publish.qos = MQTT_QOS_0; //ask victor which quality of service to us (1, 2, or 3)
 	publish.retain = 0;
 	publish.duplicate = 0;
-	publish.topic_name = "TelemHost_Data";
 	publish.buffer = (byte*) smsg;
 
 

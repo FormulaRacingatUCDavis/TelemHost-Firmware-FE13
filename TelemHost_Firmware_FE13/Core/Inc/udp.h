@@ -19,13 +19,13 @@
 #define UDP_SERVER_PORT 7
 
 typedef struct {
-	uint8_t id;
-	uint8_t data[16];
-	uint8_t length;
+	char json_string[128];
+	char topic_name[16];
 } MQTTMessageFormat_t;
 
 
-void MQTT_update(struct netconn *conn, struct netbuf *buf, char* smsg, err_t *err, struct pbuf *txBuf, osMessageQueueId_t *MQTT_queueHandle, MqttPublish *publish, MqttClient *client);
+
+void MQTT_update(struct netconn *conn, struct netbuf *buf, char* smsg, err_t *err, struct pbuf *txBuf, osMessageQueueId_t MQTT_queueHandle, MqttPublish *publish, MqttClient *client);
 
 
 

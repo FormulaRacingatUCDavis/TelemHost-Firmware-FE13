@@ -44,6 +44,7 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticQueue_t osStaticMessageQDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -98,7 +99,7 @@ const osThreadAttr_t UDPServer_attributes = {
 /* Definitions for MQTT_queue */
 osMessageQueueId_t MQTT_queueHandle;
 uint8_t MQTT_queueBuffer[ 16 * sizeof( MQTTMessageFormat_t ) ];
-osMessageQDef_t MQTT_queueControlBlock;
+osStaticMessageQDef_t MQTT_queueControlBlock;
 const osMessageQueueAttr_t MQTT_queue_attributes = {
   .name = "MQTT_queue",
   .cb_mem = &MQTT_queueControlBlock,
@@ -270,16 +271,6 @@ int main(void)
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
-}
-
-/**
- * @brief internet and mqtt connection
- */
-void Connect_Init(){
-	int rc = mqtt_conn_init();
-	if (rc != 0) {
-		/* MQTT connection initiation failed */
-	}
 }
 
 /**
@@ -804,7 +795,7 @@ void MainEntry(void *argument)
 
 
 	Xsens_Update(&huart2);
-	HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);
+	//HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);
   }
 
   // In case we accidentally leave the infinite loop
@@ -856,12 +847,6 @@ void SDCardEntry(void *argument)
 /* USER CODE END Header_UDPServerEntry */
 void UDPServerEntry(void *argument)
 {
-	/* Wait for LwIP / DHCP to bring up the network interface */
-	osDelay(3000);
-
-	/* Connect to MQTT broker */
-	Connect_Init();
-
   /* USER CODE BEGIN UDPServerEntry */
 	static struct netconn *conn;
 	static struct netbuf *buf;
@@ -894,14 +879,13 @@ void UDPServerEntry(void *argument)
 	publish.qos = MQTT_QOS_0; //ask victor which quality of service to us (1, 2, or 3)
 	publish.retain = 0;
 	publish.duplicate = 0;
-	publish.topic_name = "TelemHost_Data";
 	publish.buffer = (byte*) smsg;
 
 
 	/* Infinite loop */
 	for(;;)
 	{
-		MQTT_update(conn, buf, smsg, &err, txBuf, &MQTT_queueHandle, &publish, &client);
+		MQTT_update(conn, buf, smsg, &err, txBuf, MQTT_queueHandle, &publish, &client);
 		osDelay(1);
 	}
 

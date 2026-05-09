@@ -27,7 +27,7 @@
 #include "lwip/ethip6.h"
 #include "ethernetif.h"
 /* USER CODE BEGIN Include for User BSP */
-
+#include "ethernet_driver.h"
 /* USER CODE END Include for User BSP */
 #include <string.h>
 #include "cmsis_os.h"
@@ -135,7 +135,18 @@ ETH_TxPacketConfig TxConfig;
 /* Private function prototypes -----------------------------------------------*/
 
 /* USER CODE BEGIN 3 */
+int32_t ETH_PHY_IO_Init(void);
+int32_t ETH_PHY_IO_DeInit (void);
+int32_t ETH_PHY_IO_ReadReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t *pRegVal);
+int32_t ETH_PHY_IO_WriteReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t RegVal);
+int32_t ETH_PHY_IO_GetTick(void);
 
+user_phy_Object_t USER_PHY;
+user_phy_IOCtx_t  USER_PHY_IOCtx = {ETH_PHY_IO_Init,
+                                  ETH_PHY_IO_DeInit,
+                                  ETH_PHY_IO_WriteReg,
+                                  ETH_PHY_IO_ReadReg,
+                                  ETH_PHY_IO_GetTick};
 /* USER CODE END 3 */
 
 /* Private functions ---------------------------------------------------------*/
@@ -193,7 +204,9 @@ static void low_level_init(struct netif *netif)
   osThreadAttr_t attributes;
 /* USER CODE END OS_THREAD_ATTR_CMSIS_RTOS_V2 */
 /* USER CODE BEGIN low_level_init Variables Initialization for User BSP */
-
+  	uint32_t duplex, speed = 0;
+    int32_t PHYLinkState = 0;
+    ETH_MACConfigTypeDef MACConf = {0};
 /* USER CODE END low_level_init Variables Initialization for User BSP */
   /* Start ETH HAL Init */
 
@@ -267,13 +280,72 @@ static void low_level_init(struct netif *netif)
 /* USER CODE END OS_THREAD_NEW_CMSIS_RTOS_V2 */
 
 /* USER CODE BEGIN low_level_init Code 1 for User BSP */
+  /* Set PHY IO functions */
+	USER_PHY_RegisterBusIO(&USER_PHY, &USER_PHY_IOCtx);
 
+	/* Initialize the DP83822 ETH PHY */
+	if(USER_PHY_Init(&USER_PHY) != USER_PHY_STATUS_OK)
+	{
+	  netif_set_link_down(netif);
+	  netif_set_down(netif);
+	  return;
+	}
 /* USER CODE END low_level_init Code 1 for User BSP */
 
   if (hal_eth_init_status == HAL_OK)
   {
 /* USER CODE BEGIN low_level_init Code 2 for User BSP */
+	  PHYLinkState = USER_PHY_GetLinkState(&USER_PHY);
 
+	  /* Get link state */
+	  if(PHYLinkState <= USER_PHY_STATUS_LINK_DOWN)
+	  {
+		netif_set_link_down(netif);
+		netif_set_down(netif);
+	  }
+	  else
+	  {
+		switch (PHYLinkState)
+		{
+		case USER_PHY_STATUS_100MBITS_FULLDUPLEX:
+		  duplex = ETH_FULLDUPLEX_MODE;
+		  speed = ETH_SPEED_100M;
+		  break;
+		case USER_PHY_STATUS_100MBITS_HALFDUPLEX:
+		  duplex = ETH_HALFDUPLEX_MODE;
+		  speed = ETH_SPEED_100M;
+		  break;
+		case USER_PHY_STATUS_10MBITS_FULLDUPLEX:
+		  duplex = ETH_FULLDUPLEX_MODE;
+		  speed = ETH_SPEED_10M;
+		  break;
+		case USER_PHY_STATUS_10MBITS_HALFDUPLEX:
+		  duplex = ETH_HALFDUPLEX_MODE;
+		  speed = ETH_SPEED_10M;
+		  break;
+		default:
+		  duplex = ETH_FULLDUPLEX_MODE;
+		  speed = ETH_SPEED_100M;
+		  break;
+		}
+
+	  /* Get MAC Config MAC */
+	  HAL_ETH_GetMACConfig(&heth, &MACConf);
+	  MACConf.DuplexMode = duplex;
+	  MACConf.Speed = speed;
+	  HAL_ETH_SetMACConfig(&heth, &MACConf);
+
+	  HAL_ETH_Start_IT(&heth);
+	  netif_set_up(netif);
+	  netif_set_link_up(netif);
+
+	  /* POST CONFIG USER SETTINGS */
+	  USER_PHY_GenericRegisterEnable(&USER_PHY, 0x19, 1 << 15); // enable auto MDIX in PHYCR
+	  USER_PHY_GenericRegisterEnable(&USER_PHY, 0x25, 0b11); // route MLED to LED_0 (green LED)
+	  USER_PHY_GenericRegisterDisable(&USER_PHY, 0x19, 1 << 5); // green LED function (on for link)
+	  USER_PHY_ExtendedRegisterDisable(&USER_PHY, 0x460, 0b101 << 8); // use yellow LED for LINK OK
+
+	  }
 /* USER CODE END low_level_init Code 2 for User BSP */
 
   }
@@ -538,6 +610,225 @@ u32_t sys_now(void)
 
 /* USER CODE BEGIN PHI IO Functions for User BSP */
 
+/**
+  * @brief  Initializes the ETH MSP.
+  * @param  ethHandle: ETH handle
+  * @retval None
+  */
+
+void HAL_ETH_MspInit(ETH_HandleTypeDef* ethHandle)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  if(ethHandle->Instance==ETH)
+  {
+  /* USER CODE BEGIN ETH_MspInit 0 */
+
+  /* USER CODE END ETH_MspInit 0 */
+    /* Enable Peripheral clock */
+    __HAL_RCC_ETH_CLK_ENABLE();
+
+    __HAL_RCC_GPIOE_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    /**ETH GPIO Configuration
+    PE2     ------> ETH_TXD3
+    PC1     ------> ETH_MDC
+    PC2     ------> ETH_TXD2
+    PC3     ------> ETH_TX_CLK
+    PA0/WKUP     ------> ETH_CRS
+    PA1     ------> ETH_RX_CLK
+    PA2     ------> ETH_MDIO
+    PA3     ------> ETH_COL
+    PA7     ------> ETH_RX_DV
+    PC4     ------> ETH_RXD0
+    PC5     ------> ETH_RXD1
+    PB0     ------> ETH_RXD2
+    PB1     ------> ETH_RXD3
+    PB11     ------> ETH_TX_EN
+    PB12     ------> ETH_TXD0
+    PB13     ------> ETH_TXD1
+    */
+    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
+    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3|GPIO_PIN_7;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /* Peripheral interrupt init */
+    HAL_NVIC_SetPriority(ETH_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(ETH_IRQn);
+  /* USER CODE BEGIN ETH_MspInit 1 */
+
+  /* USER CODE END ETH_MspInit 1 */
+  }
+}
+
+void HAL_ETH_MspDeInit(ETH_HandleTypeDef* ethHandle)
+{
+  if(ethHandle->Instance==ETH)
+  {
+  /* USER CODE BEGIN ETH_MspDeInit 0 */
+
+  /* USER CODE END ETH_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_ETH_CLK_DISABLE();
+
+    /**ETH GPIO Configuration
+    PE2     ------> ETH_TXD3
+    PC1     ------> ETH_MDC
+    PC2     ------> ETH_TXD2
+    PC3     ------> ETH_TX_CLK
+    PA0/WKUP     ------> ETH_CRS
+    PA1     ------> ETH_RX_CLK
+    PA2     ------> ETH_MDIO
+    PA3     ------> ETH_COL
+    PA7     ------> ETH_RX_DV
+    PC4     ------> ETH_RXD0
+    PC5     ------> ETH_RXD1
+    PB0     ------> ETH_RXD2
+    PB1     ------> ETH_RXD3
+    PB11     ------> ETH_TX_EN
+    PB12     ------> ETH_TXD0
+    PB13     ------> ETH_TXD1
+    */
+    HAL_GPIO_DeInit(GPIOE, GPIO_PIN_2);
+
+    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4
+                          |GPIO_PIN_5);
+
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
+                          |GPIO_PIN_7);
+
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_11|GPIO_PIN_12
+                          |GPIO_PIN_13);
+
+    /* Peripheral interrupt Deinit*/
+    HAL_NVIC_DisableIRQ(ETH_IRQn);
+
+  /* USER CODE BEGIN ETH_MspDeInit 1 */
+
+  /* USER CODE END ETH_MspDeInit 1 */
+  }
+}
+
+
+/*******************************************************************************
+                       PHI IO Functions
+*******************************************************************************/
+/**
+  * @brief  Initializes the MDIO interface GPIO and clocks.
+  * @param  None
+  * @retval 0 if OK, -1 if ERROR
+  */
+int32_t ETH_PHY_IO_Init(void)
+{
+  /* We assume that MDIO GPIO configuration is already done
+     in the ETH_MspInit() else it should be done here
+  */
+
+  /* Configure the MDIO Clock */
+  HAL_ETH_SetMDIOClockRange(&heth);
+
+  return 0;
+}
+
+/**
+  * @brief  De-Initializes the MDIO interface .
+  * @param  None
+  * @retval 0 if OK, -1 if ERROR
+  */
+int32_t ETH_PHY_IO_DeInit (void)
+{
+  return 0;
+}
+
+/**
+  * @brief  Read a PHY register through the MDIO interface.
+  * @param  DevAddr: PHY port address
+  * @param  RegAddr: PHY register address
+  * @param  pRegVal: pointer to hold the register value
+  * @retval 0 if OK -1 if Error
+  */
+int32_t ETH_PHY_IO_ReadReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t *pRegVal)
+{
+  if(HAL_ETH_ReadPHYRegister(&heth, DevAddr, RegAddr, pRegVal) != HAL_OK)
+  {
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+  * @brief  Write a value to a PHY register through the MDIO interface.
+  * @param  DevAddr: PHY port address
+  * @param  RegAddr: PHY register address
+  * @param  RegVal: Value to be written
+  * @retval 0 if OK -1 if Error
+  */
+int32_t ETH_PHY_IO_WriteReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t RegVal)
+{
+  if(HAL_ETH_WritePHYRegister(&heth, DevAddr, RegAddr, RegVal) != HAL_OK)
+  {
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+  * @brief  Get the time in millisecons used for internal PHY driver process.
+  * @retval Time value
+  */
+int32_t ETH_PHY_IO_GetTick(void)
+{
+  return HAL_GetTick();
+}
+
 /* USER CODE END PHI IO Functions for User BSP */
 
 /**
@@ -548,13 +839,65 @@ void ethernet_link_thread(void* argument)
 {
 
 /* USER CODE BEGIN ETH link init */
+  ETH_MACConfigTypeDef MACConf = {0};
+  int32_t PHYLinkState = 0;
+  uint32_t linkchanged = 0U, speed = 0U, duplex = 0U;
 
+  struct netif *netif = (struct netif *) argument;
 /* USER CODE END ETH link init */
 
   for(;;)
   {
 
 /* USER CODE BEGIN ETH link Thread core code for User BSP */
+	PHYLinkState = USER_PHY_GetLinkState(&USER_PHY);
+
+	if(netif_is_link_up(netif) && (PHYLinkState <= USER_PHY_STATUS_LINK_DOWN))
+	{
+	  HAL_ETH_Stop_IT(&heth);
+	  netif_set_down(netif);
+	  netif_set_link_down(netif);
+	}
+	else if(!netif_is_link_up(netif) && (PHYLinkState > USER_PHY_STATUS_LINK_DOWN))
+	{
+	  switch (PHYLinkState)
+	  {
+	  case USER_PHY_STATUS_100MBITS_FULLDUPLEX:
+		duplex = ETH_FULLDUPLEX_MODE;
+		speed = ETH_SPEED_100M;
+		linkchanged = 1;
+		break;
+	  case USER_PHY_STATUS_100MBITS_HALFDUPLEX:
+		duplex = ETH_HALFDUPLEX_MODE;
+		speed = ETH_SPEED_100M;
+		linkchanged = 1;
+		break;
+	  case USER_PHY_STATUS_10MBITS_FULLDUPLEX:
+		duplex = ETH_FULLDUPLEX_MODE;
+		speed = ETH_SPEED_10M;
+		linkchanged = 1;
+		break;
+	  case USER_PHY_STATUS_10MBITS_HALFDUPLEX:
+		duplex = ETH_HALFDUPLEX_MODE;
+		speed = ETH_SPEED_10M;
+		linkchanged = 1;
+		break;
+	  default:
+		break;
+	  }
+
+	  if(linkchanged)
+	  {
+		/* Get MAC Config MAC */
+		HAL_ETH_GetMACConfig(&heth, &MACConf);
+		MACConf.DuplexMode = duplex;
+		MACConf.Speed = speed;
+		HAL_ETH_SetMACConfig(&heth, &MACConf);
+		HAL_ETH_Start_IT(&heth);
+		netif_set_up(netif);
+		netif_set_link_up(netif);
+	  }
+	}
 
 /* USER CODE END ETH link Thread core code for User BSP */
 

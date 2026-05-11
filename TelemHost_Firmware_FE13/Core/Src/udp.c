@@ -32,7 +32,6 @@ void MQTT_update(struct netconn *conn, struct netbuf *buf, char *smsg, err_t *er
 	MQTTMessageFormat_t receivedData;
 	smsg[0] = '\0'; // should get overwritten immediately
 
-	osStatus_t status = osMessageQueueGet(*MQTT_queueHandle, &receivedData, NULL, 0U);
 	osStatus_t status = osMessageQueueGet(MQTT_queueHandle, &receivedData, NULL, 0);
 
 	if (status == osOK)

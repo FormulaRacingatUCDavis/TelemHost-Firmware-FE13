@@ -22,7 +22,7 @@
 
 extern CAN_HandleTypeDef hcan1;
 
-#define BUFLEN 200
+#define BUFLEN 256 // should be a multiple of 32 (each cache line is 32 bytes)
 
 #define HI8(x) ((x>>8)&0xFF)
 #define LO8(x) (x&0xFF);
@@ -36,7 +36,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata);
 void Xsens_Update(UART_HandleTypeDef* h_uart){
 	static bool first_run = true;
 	static Serial_t serial;
-	static uint8_t rx_buf[BUFLEN] __attribute__((section(".XsensRxBufSection")));
+	static uint8_t rx_buf[BUFLEN] __ALIGNED(32); // make sure buffer is aligned to cache lines (each line is 32 bytes)
 	static xsens_interface_t imu_interface = XSENS_INTERFACE_RX(&imu_callback);
 
 	if(first_run){
@@ -57,6 +57,7 @@ void Xsens_Update(UART_HandleTypeDef* h_uart){
 	}
 
 	uint32_t b = Serial_BytesAvailable(&serial);
+	if (b > 0) SCB_InvalidateDCache_by_Addr((uint32_t*)rx_buf, BUFLEN);
 	for(uint32_t i = 0; i < b; i++){
 //		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
 

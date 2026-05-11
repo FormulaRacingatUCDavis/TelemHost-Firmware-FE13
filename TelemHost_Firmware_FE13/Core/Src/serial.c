@@ -1,6 +1,6 @@
 #include "serial.h"
 
-void Serial_Init(Serial_t* serial, UART_HandleTypeDef* h_uart, uint8_t* buf, uint8_t len)
+void Serial_Init(Serial_t* serial, UART_HandleTypeDef* h_uart, uint8_t* buf, uint16_t len)
 {
 	serial->h_uart = h_uart;
 	serial->buf = buf;

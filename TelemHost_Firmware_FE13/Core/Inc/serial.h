@@ -19,7 +19,7 @@ typedef struct
 	uint32_t index;
 } Serial_t;
 
-void Serial_Init(Serial_t* serial, UART_HandleTypeDef* h_uart, uint8_t* buf, uint8_t len);
+void Serial_Init(Serial_t* serial, UART_HandleTypeDef* h_uart, uint8_t* buf, uint16_t len);
 HAL_StatusTypeDef Serial_StartListening(Serial_t* serial);
 uint32_t Serial_BytesAvailable(Serial_t* serial);
 uint8_t Serial_GetByte(Serial_t* serial);

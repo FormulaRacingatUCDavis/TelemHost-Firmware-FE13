@@ -22,7 +22,7 @@
 
 extern CAN_HandleTypeDef hcan1;
 
-#define BUFLEN 256 // should be a multiple of 32 (each cache line is 32 bytes)
+#define BUFLEN 224 // should be a multiple of 32 (each cache line is 32 bytes)
 
 #define HI8(x) ((x>>8)&0xFF)
 #define LO8(x) (x&0xFF);
@@ -57,7 +57,7 @@ void Xsens_Update(UART_HandleTypeDef* h_uart){
 	}
 
 	uint32_t b = Serial_BytesAvailable(&serial);
-	if (b > 0) SCB_InvalidateDCache_by_Addr((uint32_t*)rx_buf, BUFLEN);
+	if (b > 0) SCB_InvalidateDCache_by_Addr((uint32_t*)rx_buf, b);
 	for(uint32_t i = 0; i < b; i++){
 //		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
 

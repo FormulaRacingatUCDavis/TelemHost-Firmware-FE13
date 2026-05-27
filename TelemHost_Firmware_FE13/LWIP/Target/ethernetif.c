@@ -141,8 +141,8 @@ int32_t ETH_PHY_IO_ReadReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t *pRegVal
 int32_t ETH_PHY_IO_WriteReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t RegVal);
 int32_t ETH_PHY_IO_GetTick(void);
 
-user_phy_Object_t USER_PHY;
-user_phy_IOCtx_t  USER_PHY_IOCtx = {ETH_PHY_IO_Init,
+user_phy_Object_t DP83822;
+user_phy_IOCtx_t  DP83822_IOCtx = {ETH_PHY_IO_Init,
                                   ETH_PHY_IO_DeInit,
                                   ETH_PHY_IO_WriteReg,
                                   ETH_PHY_IO_ReadReg,
@@ -281,10 +281,10 @@ static void low_level_init(struct netif *netif)
 
 /* USER CODE BEGIN low_level_init Code 1 for User BSP */
   /* Set PHY IO functions */
-	USER_PHY_RegisterBusIO(&USER_PHY, &USER_PHY_IOCtx);
+	USER_PHY_RegisterBusIO(&DP83822, &DP83822_IOCtx);
 
 	/* Initialize the DP83822 ETH PHY */
-	if(USER_PHY_Init(&USER_PHY) != USER_PHY_STATUS_OK)
+	if(USER_PHY_Init(&DP83822) != USER_PHY_STATUS_OK)
 	{
 	  netif_set_link_down(netif);
 	  netif_set_down(netif);
@@ -295,7 +295,7 @@ static void low_level_init(struct netif *netif)
   if (hal_eth_init_status == HAL_OK)
   {
 /* USER CODE BEGIN low_level_init Code 2 for User BSP */
-	  PHYLinkState = USER_PHY_GetLinkState(&USER_PHY);
+	  PHYLinkState = USER_PHY_GetLinkState(&DP83822);
 
 	  /* Get link state */
 	  if(PHYLinkState <= USER_PHY_STATUS_LINK_DOWN)
@@ -340,10 +340,10 @@ static void low_level_init(struct netif *netif)
 	  netif_set_link_up(netif);
 
 	  /* POST CONFIG USER SETTINGS */
-	  USER_PHY_GenericRegisterEnable(&USER_PHY, 0x19, 1 << 15); // enable auto MDIX in PHYCR
-	  USER_PHY_GenericRegisterEnable(&USER_PHY, 0x25, 0b11); // route MLED to LED_0 (green LED)
-	  USER_PHY_GenericRegisterDisable(&USER_PHY, 0x19, 1 << 5); // green LED function (on for link)
-	  USER_PHY_ExtendedRegisterDisable(&USER_PHY, 0x460, 0b101 << 8); // use yellow LED for LINK OK
+	  USER_PHY_GenericRegisterEnable(&DP83822, 0x19, 1 << 15); // enable auto MDIX in PHYCR
+	  USER_PHY_GenericRegisterEnable(&DP83822, 0x25, 0b11); // route MLED to LED_0 (green LED)
+	  USER_PHY_GenericRegisterDisable(&DP83822, 0x19, 1 << 5); // green LED function (on for link)
+	  USER_PHY_ExtendedRegisterDisable(&DP83822, 0x460, 0b101 << 8); // use yellow LED for LINK OK
 
 	  }
 /* USER CODE END low_level_init Code 2 for User BSP */
@@ -356,7 +356,7 @@ static void low_level_init(struct netif *netif)
 #endif /* LWIP_ARP || LWIP_ETHERNET */
 
 /* USER CODE BEGIN LOW_LEVEL_INIT */
-
+  netif->linkoutput = low_level_output_clean_cache;
 /* USER CODE END LOW_LEVEL_INIT */
 
 }
@@ -610,152 +610,6 @@ u32_t sys_now(void)
 
 /* USER CODE BEGIN PHI IO Functions for User BSP */
 
-/**
-  * @brief  Initializes the ETH MSP.
-  * @param  ethHandle: ETH handle
-  * @retval None
-  */
-
-void HAL_ETH_MspInit(ETH_HandleTypeDef* ethHandle)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if(ethHandle->Instance==ETH)
-  {
-  /* USER CODE BEGIN ETH_MspInit 0 */
-
-  /* USER CODE END ETH_MspInit 0 */
-    /* Enable Peripheral clock */
-    __HAL_RCC_ETH_CLK_ENABLE();
-
-    __HAL_RCC_GPIOE_CLK_ENABLE();
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    /**ETH GPIO Configuration
-    PE2     ------> ETH_TXD3
-    PC1     ------> ETH_MDC
-    PC2     ------> ETH_TXD2
-    PC3     ------> ETH_TX_CLK
-    PA0/WKUP     ------> ETH_CRS
-    PA1     ------> ETH_RX_CLK
-    PA2     ------> ETH_MDIO
-    PA3     ------> ETH_COL
-    PA7     ------> ETH_RX_DV
-    PC4     ------> ETH_RXD0
-    PC5     ------> ETH_RXD1
-    PB0     ------> ETH_RXD2
-    PB1     ------> ETH_RXD3
-    PB11     ------> ETH_TX_EN
-    PB12     ------> ETH_TXD0
-    PB13     ------> ETH_TXD1
-    */
-    GPIO_InitStruct.Pin = GPIO_PIN_2;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
-    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3|GPIO_PIN_7;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = GPIO_PIN_2;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    /* Peripheral interrupt init */
-    HAL_NVIC_SetPriority(ETH_IRQn, 5, 0);
-    HAL_NVIC_EnableIRQ(ETH_IRQn);
-  /* USER CODE BEGIN ETH_MspInit 1 */
-
-  /* USER CODE END ETH_MspInit 1 */
-  }
-}
-
-void HAL_ETH_MspDeInit(ETH_HandleTypeDef* ethHandle)
-{
-  if(ethHandle->Instance==ETH)
-  {
-  /* USER CODE BEGIN ETH_MspDeInit 0 */
-
-  /* USER CODE END ETH_MspDeInit 0 */
-    /* Peripheral clock disable */
-    __HAL_RCC_ETH_CLK_DISABLE();
-
-    /**ETH GPIO Configuration
-    PE2     ------> ETH_TXD3
-    PC1     ------> ETH_MDC
-    PC2     ------> ETH_TXD2
-    PC3     ------> ETH_TX_CLK
-    PA0/WKUP     ------> ETH_CRS
-    PA1     ------> ETH_RX_CLK
-    PA2     ------> ETH_MDIO
-    PA3     ------> ETH_COL
-    PA7     ------> ETH_RX_DV
-    PC4     ------> ETH_RXD0
-    PC5     ------> ETH_RXD1
-    PB0     ------> ETH_RXD2
-    PB1     ------> ETH_RXD3
-    PB11     ------> ETH_TX_EN
-    PB12     ------> ETH_TXD0
-    PB13     ------> ETH_TXD1
-    */
-    HAL_GPIO_DeInit(GPIOE, GPIO_PIN_2);
-
-    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4
-                          |GPIO_PIN_5);
-
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
-                          |GPIO_PIN_7);
-
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_11|GPIO_PIN_12
-                          |GPIO_PIN_13);
-
-    /* Peripheral interrupt Deinit*/
-    HAL_NVIC_DisableIRQ(ETH_IRQn);
-
-  /* USER CODE BEGIN ETH_MspDeInit 1 */
-
-  /* USER CODE END ETH_MspDeInit 1 */
-  }
-}
-
-
 /*******************************************************************************
                        PHI IO Functions
 *******************************************************************************/
@@ -850,7 +704,7 @@ void ethernet_link_thread(void* argument)
   {
 
 /* USER CODE BEGIN ETH link Thread core code for User BSP */
-	PHYLinkState = USER_PHY_GetLinkState(&USER_PHY);
+	PHYLinkState = USER_PHY_GetLinkState(&DP83822);
 
 	if(netif_is_link_up(netif) && (PHYLinkState <= USER_PHY_STATUS_LINK_DOWN))
 	{
@@ -977,6 +831,93 @@ void HAL_ETH_TxFreeCallback(uint32_t * buff)
 }
 
 /* USER CODE BEGIN 8 */
+
+/**
+ * @brief This function should do the actual transmission of the packet. The packet is
+ * contained in the pbuf that is passed to the function. This pbuf
+ * might be chained. Copy of low_level_output but cleans D-cache before transmission.
+ *
+ * @param netif the lwip network interface structure for this ethernetif
+ * @param p the MAC packet to send (e.g. IP packet including MAC addresses and type)
+ * @return ERR_OK if the packet could be sent
+ *         an err_t value if the packet couldn't be sent
+ *
+ * @note Returning ERR_MEM here if a DMA queue of your MAC is full can lead to
+ *       strange results. You might consider waiting for space in the DMA queue
+ *       to become available since the stack doesn't retry to send a packet
+ *       dropped because of memory failure (except for the TCP timers).
+ */
+
+static err_t low_level_output_clean_cache(struct netif *netif, struct pbuf *p)
+{
+  uint32_t i = 0U;
+  struct pbuf *q = NULL;
+  err_t errval = ERR_OK;
+  ETH_BufferTypeDef Txbuffer[ETH_TX_DESC_CNT] = {0};
+
+  memset(Txbuffer, 0 , ETH_TX_DESC_CNT*sizeof(ETH_BufferTypeDef));
+
+  for(q = p; q != NULL; q = q->next)
+  {
+    if(i >= ETH_TX_DESC_CNT)
+      return ERR_IF;
+
+    Txbuffer[i].buffer = q->payload;
+    Txbuffer[i].len = q->len;
+
+    // Calculate cache-aligned address and length to write back payload from cache before DMA TX
+	uint32_t* start_addr = (uint32_t*)((uint32_t)(Txbuffer[i].buffer) & ~(32 - 1)); // cache line size is 32 bytes
+	uint32_t end_addr = (uint32_t)(Txbuffer[i].buffer) + Txbuffer[i].len;
+	end_addr = (end_addr + 32 - 1) & ~(32 - 1); // align end address to cache line boundary
+	uint32_t len = end_addr - (uint32_t)start_addr;
+	SCB_CleanDCache_by_Addr(start_addr, len);
+
+    if(i>0)
+    {
+      Txbuffer[i-1].next = &Txbuffer[i];
+    }
+
+    if(q->next == NULL)
+    {
+      Txbuffer[i].next = NULL;
+    }
+
+    i++;
+  }
+
+  TxConfig.Length = p->tot_len;
+  TxConfig.TxBuffer = Txbuffer;
+  TxConfig.pData = p;
+
+  pbuf_ref(p);
+
+  do
+  {
+    if(HAL_ETH_Transmit_IT(&heth, &TxConfig) == HAL_OK)
+    {
+      errval = ERR_OK;
+    }
+    else
+    {
+
+      if(HAL_ETH_GetError(&heth) & HAL_ETH_ERROR_BUSY)
+      {
+        /* Wait for descriptors to become available */
+        osSemaphoreAcquire(  TxPktSemaphore, ETHIF_TX_TIMEOUT);
+        HAL_ETH_ReleaseTxPacket(&heth);
+        errval = ERR_BUF;
+      }
+      else
+      {
+        /* Other error */
+        pbuf_free(p);
+        errval =  ERR_IF;
+      }
+    }
+  }while(errval == ERR_BUF);
+
+  return errval;
+}
 
 /* USER CODE END 8 */
 

@@ -199,8 +199,8 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
         case XSENS_EVT_LAT_LON:
             if ( mtdata->type == XSENS_EVT_TYPE_FLOAT2 )
             {
-                int32_t lat = (int32_t)(mtdata->data.f4x2[0] * 10000);
-                int32_t lon = (int32_t)(mtdata->data.f4x2[1] * 10000);
+                int32_t lat = (int32_t)(mtdata->data.f4x2[0] * 1000000);
+                int32_t lon = (int32_t)(mtdata->data.f4x2[1] * 1000000);
 //                uint8_t data[8] = {0};
 
 

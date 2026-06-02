@@ -38,7 +38,7 @@ static void save_can_rx_data(CAN_RxHeaderTypeDef rxHeader, uint8_t rxData[]);
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData);
-	save_can_rx_data(RxHeader, RxData);
+	//save_can_rx_data(RxHeader, RxData);
 }
 
 

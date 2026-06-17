@@ -30,6 +30,10 @@ extern CAN_HandleTypeDef hcan1;
 // PRIVATE FUNCTION PROTOTYPES
 void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata);
 
+#define CAN_SEND_DELAY 10
+uint32_t prev_sends[21] = {0};
+uint32_t time_diff = 0;
+
 
 // PUBLIC FUNCTION DEFINITIONS
 
@@ -132,7 +136,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                 data[7] = flags;
 
                 sd_card_write_data(0x101, data);
-                CAN_Send(&hcan1, 0x101, data, 8);
+                time_diff = HAL_GetTick() - prev_sends[0];
+                if (time_diff > CAN_SEND_DELAY) {
+                	CAN_Send(&hcan1, 0x101, data, 8);
+                	prev_sends[0] = HAL_GetTick();
+                }
 			}
                     break;
 
@@ -145,7 +153,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[1] = LO8(packet_count);
 
                         sd_card_write_data(0x102, data);
-                        CAN_Send(&hcan1, 0x102, data, 2);
+                        time_diff = HAL_GetTick() - prev_sends[1];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x102, data, 2);
+							prev_sends[1] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -165,7 +177,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(ang_z);
 
                         sd_card_write_data(0x106, data);
-                        CAN_Send(&hcan1, 0x106, data, 6);
+                        time_diff = HAL_GetTick() - prev_sends[2];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x106, data, 6);
+							prev_sends[2] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -180,7 +196,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[3] = (pressure >> 0)  & 0xFF;
 
                         sd_card_write_data(0x110, data);
-                        CAN_Send(&hcan1, 0x110, data, 4);
+                        time_diff = HAL_GetTick() - prev_sends[3];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x110, data, 4);
+							prev_sends[3] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -203,7 +223,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[7] = LO8(delta4);
 
                         sd_card_write_data(0x112, data);
-                        CAN_Send(&hcan1, 0x112, data, 8);
+                        time_diff = HAL_GetTick() - prev_sends[4];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x112, data, 8);
+							prev_sends[4] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -224,7 +248,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[7] = (lon >> 0)  & 0xFF;
 
                         sd_card_write_data(0x127, data);
-                        CAN_Send(&hcan1, 0x127, data, 8);
+                        time_diff = HAL_GetTick() - prev_sends[5];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x127, data, 8);
+							prev_sends[5] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -244,7 +272,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(accZ);
 
                         sd_card_write_data(0x113, data);
-                        CAN_Send(&hcan1, 0x113, data, 6);
+                        time_diff = HAL_GetTick() - prev_sends[6];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x113, data, 6);
+							prev_sends[6] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -264,7 +296,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(acc_z);
 
                         sd_card_write_data(0x114, data);
-                        CAN_Send(&hcan1, 0x114, data, 6);
+                        time_diff = HAL_GetTick() - prev_sends[7];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x114, data, 6);
+							prev_sends[7] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -284,7 +320,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(dVZ);
 
                         sd_card_write_data(0x111, data);
-                        CAN_Send(&hcan1, 0x111, data, 6);
+                        time_diff = HAL_GetTick() - prev_sends[8];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x111, data, 6);
+							prev_sends[8] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -296,7 +336,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[0] = status_byte;
 
                         sd_card_write_data(0x122, data);
-                        CAN_Send(&hcan1, 0x122, data, 1);
+                        time_diff = HAL_GetTick() - prev_sends[9];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x122, data, 1);
+							prev_sends[9] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -311,7 +355,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[3] = (status_word >> 0)  & 0xFF;
 
                         sd_card_write_data(0x123, data);
-                        CAN_Send(&hcan1, 0x123, data, 4);
+                        time_diff = HAL_GetTick() - prev_sends[10];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x123, data, 4);
+							prev_sends[10] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -326,7 +374,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[3] = (dev_id >> 0)  & 0xFF;
 
                         sd_card_write_data(0x124, data);
-                        CAN_Send(&hcan1, 0x124, data, 4);
+                        time_diff = HAL_GetTick() - prev_sends[11];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x124, data, 4);
+							prev_sends[11] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -339,7 +391,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[1] = LO8(location);
 
                         sd_card_write_data(0x125, data);
-                        CAN_Send(&hcan1, 0x125, data, 2);
+                        time_diff = HAL_GetTick() - prev_sends[12];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x125, data, 2);
+							prev_sends[12] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -359,7 +415,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(ecef_z);
 
                         sd_card_write_data(0x987, data); // ID is weird but we dont use position ECEF anyway
-                        CAN_Send(&hcan1, 0x987, data, 8);
+                        time_diff = HAL_GetTick() - prev_sends[13];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x987, data, 6);
+							prev_sends[13] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -379,7 +439,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(accZ);
 
                         sd_card_write_data(0x115, data);
-                        CAN_Send(&hcan1, 0x115, data, 6);
+                        time_diff = HAL_GetTick() - prev_sends[14];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x115, data, 6);
+							prev_sends[14] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -399,7 +463,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(gyrZ);
 
                         sd_card_write_data(0x116, data);
-                        CAN_Send(&hcan1, 0x116, data, 6);
+                        time_diff = HAL_GetTick() - prev_sends[15];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x116, data, 6);
+							prev_sends[15] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -419,7 +487,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(gyrZ);
 
                         sd_card_write_data(0x117, data);
-                        CAN_Send(&hcan1, 0x117, data, 6);
+                        time_diff = HAL_GetTick() - prev_sends[16];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x117, data, 6);
+							prev_sends[16] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -434,7 +506,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[3] = (pulse >> 24) & 0xFF;
 
                         sd_card_write_data(0x118, data);
-                        CAN_Send(&hcan1, 0x118, data, 4);
+                        time_diff = HAL_GetTick() - prev_sends[17];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x118, data, 4);
+							prev_sends[17] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -454,7 +530,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(magZ);
 
                         sd_card_write_data(0x121, data);
-                        CAN_Send(&hcan1, 0x121, data, 6);
+                        time_diff = HAL_GetTick() - prev_sends[18];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x121, data, 6);
+							prev_sends[18] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -467,7 +547,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[1] = LO8(alt);
 
                         sd_card_write_data(0x128, data);
-                        CAN_Send(&hcan1, 0x128, data, 2);
+                        time_diff = HAL_GetTick() - prev_sends[19];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x128, data, 2);
+							prev_sends[19] = HAL_GetTick();
+						}
                     }
                     break;
 
@@ -486,7 +570,11 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(vel_z);
 
                         sd_card_write_data(0x129, data);
-                        CAN_Send(&hcan1, 0x129, data, 6);
+                        time_diff = HAL_GetTick() - prev_sends[20];
+						if (time_diff > CAN_SEND_DELAY) {
+							CAN_Send(&hcan1, 0x129, data, 6);
+							prev_sends[20] = HAL_GetTick();
+						}
 
 
                     }

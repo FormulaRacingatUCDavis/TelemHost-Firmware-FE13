@@ -14,7 +14,7 @@
 #include "sd_card.h"
 #include "serial_print.h"
 #include "main.h"
-#include "udp.h"
+//#include "udp.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -96,7 +96,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
 	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
 
 
-	MQTTMessageFormat_t mqtt_msg;
+//	MQTTMessageFormat_t mqtt_msg;
 
 
 
@@ -132,11 +132,8 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                 data[7] = flags;
 
                 sd_card_write_data(0x101, data);
-                        strcpy(mqtt_msg.topic_name, "utc_time");
-                        sprintf(mqtt_msg.json_string, "{\"year\": %u, \"month\": %u, \"day\": %u, \"hour\": %u, \"min\": %u, \"sec\": %u, \"nanos\": %lu}",
-                                year, month, day, hour, minute, second, nanoseconds);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
-                    }
+                CAN_Send(&hcan1, 0x101, data, 8);
+			}
                     break;
 
                 case XSENS_EVT_PACKET_COUNT:
@@ -148,9 +145,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[1] = LO8(packet_count);
 
                         sd_card_write_data(0x102, data);
-                        strcpy(mqtt_msg.topic_name, "packet_count");
-                        sprintf(mqtt_msg.json_string, "{\"packetCount\": %u}", packet_count);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x102, data, 2);
                     }
                     break;
 
@@ -170,10 +165,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(ang_z);
 
                         sd_card_write_data(0x106, data);
-                        strcpy(mqtt_msg.topic_name, "euler");
-                        sprintf(mqtt_msg.json_string, "{\"roll\": %.2f, \"pitch\": %.2f, \"yaw\": %.2f}",
-                                mtdata->data.f4x3[0], mtdata->data.f4x3[1], mtdata->data.f4x3[2]);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x106, data, 6);
                     }
                     break;
 
@@ -188,9 +180,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[3] = (pressure >> 0)  & 0xFF;
 
                         sd_card_write_data(0x110, data);
-                        strcpy(mqtt_msg.topic_name, "pressure");
-                        sprintf(mqtt_msg.json_string, "{\"pressure\": %lu}", pressure);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x110, data, 4);
                     }
                     break;
 
@@ -213,10 +203,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[7] = LO8(delta4);
 
                         sd_card_write_data(0x112, data);
-                        strcpy(mqtt_msg.topic_name, "delta_q");
-                        sprintf(mqtt_msg.json_string, "{\"q0\": %.4f, \"q1\": %.4f, \"q2\": %.4f, \"q3\": %.4f}",
-                                mtdata->data.f4x4[0], mtdata->data.f4x4[1], mtdata->data.f4x4[2], mtdata->data.f4x4[3]);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x112, data, 8);
                     }
                     break;
 
@@ -237,10 +224,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[7] = (lon >> 0)  & 0xFF;
 
                         sd_card_write_data(0x127, data);
-                        strcpy(mqtt_msg.topic_name, "lat_lon");
-                        sprintf(mqtt_msg.json_string, "{\"lat\": %.6f, \"lon\": %.6f}",
-                                mtdata->data.f4x2[0], mtdata->data.f4x2[1]);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x127, data, 8);
                     }
                     break;
 
@@ -260,10 +244,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(accZ);
 
                         sd_card_write_data(0x113, data);
-                        strcpy(mqtt_msg.topic_name, "acceleration");
-                        sprintf(mqtt_msg.json_string, "{\"accX\": %.3f, \"accY\": %.3f, \"accZ\": %.3f}",
-                                mtdata->data.f4x3[0], mtdata->data.f4x3[1], mtdata->data.f4x3[2]);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x113, data, 6);
                     }
                     break;
 
@@ -283,10 +264,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(acc_z);
 
                         sd_card_write_data(0x114, data);
-                        strcpy(mqtt_msg.topic_name, "free_acc");
-                        sprintf(mqtt_msg.json_string, "{\"accX\": %.3f, \"accY\": %.3f, \"accZ\": %.3f}",
-                                mtdata->data.f4x3[0], mtdata->data.f4x3[1], mtdata->data.f4x3[2]);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x114, data, 6);
                     }
                     break;
 
@@ -306,10 +284,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(dVZ);
 
                         sd_card_write_data(0x111, data);
-                        strcpy(mqtt_msg.topic_name, "delta_v");
-                        sprintf(mqtt_msg.json_string, "{\"velX\": %.3f, \"velY\": %.3f, \"velZ\": %.3f}",
-                                mtdata->data.f4x3[0], mtdata->data.f4x3[1], mtdata->data.f4x3[2]);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x111, data, 6);
                     }
                     break;
 
@@ -321,9 +296,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[0] = status_byte;
 
                         sd_card_write_data(0x122, data);
-                        strcpy(mqtt_msg.topic_name, "status_byte");
-                        sprintf(mqtt_msg.json_string, "{\"status_byte\": %u}", status_byte);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x122, data, 1);
                     }
                     break;
 
@@ -338,9 +311,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[3] = (status_word >> 0)  & 0xFF;
 
                         sd_card_write_data(0x123, data);
-                        strcpy(mqtt_msg.topic_name, "status_word");
-                        sprintf(mqtt_msg.json_string, "{\"status\": \"0x%08lX\"}", status_word);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x123, data, 4);
                     }
                     break;
 
@@ -355,9 +326,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[3] = (dev_id >> 0)  & 0xFF;
 
                         sd_card_write_data(0x124, data);
-                        strcpy(mqtt_msg.topic_name, "device_id");
-                        sprintf(mqtt_msg.json_string, "{\"dev_id\": \"0x%08lX\"}", dev_id);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x124, data, 4);
                     }
                     break;
 
@@ -370,9 +339,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[1] = LO8(location);
 
                         sd_card_write_data(0x125, data);
-                        strcpy(mqtt_msg.topic_name, "location_id");
-                        sprintf(mqtt_msg.json_string, "{\"location_id\": %u}", location);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x125, data, 2);
                     }
                     break;
 
@@ -391,11 +358,8 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[4] = HI8(ecef_z);
                         data[5] = LO8(ecef_z);
 
-                        sd_card_write_data(0xA100, data);
-                        strcpy(mqtt_msg.topic_name, "ecef");
-                        sprintf(mqtt_msg.json_string, "{\"ecefX\": %.3f, \"ecefY\": %.3f, \"ecefZ\": %.3f}",
-                                mtdata->data.f4x3[0], mtdata->data.f4x3[1], mtdata->data.f4x3[2]);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        sd_card_write_data(0x987, data); // ID is weird but we dont use position ECEF anyway
+                        CAN_Send(&hcan1, 0x987, data, 8);
                     }
                     break;
 
@@ -415,10 +379,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(accZ);
 
                         sd_card_write_data(0x115, data);
-                        strcpy(mqtt_msg.topic_name, "acc_hr");
-                        sprintf(mqtt_msg.json_string, "{\"accX\": %.3f, \"accY\": %.3f, \"accZ\": %.3f}",
-                                mtdata->data.f4x3[0], mtdata->data.f4x3[1], mtdata->data.f4x3[2]);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x115, data, 6);
                     }
                     break;
 
@@ -438,10 +399,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(gyrZ);
 
                         sd_card_write_data(0x116, data);
-                        strcpy(mqtt_msg.topic_name, "rate_turn");
-                        sprintf(mqtt_msg.json_string, "{\"gyrX\": %.3f, \"gyrY\": %.3f, \"gyrZ\": %.3f}",
-                                mtdata->data.f4x3[0], mtdata->data.f4x3[1], mtdata->data.f4x3[2]);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x116, data, 6);
                     }
                     break;
 
@@ -461,10 +419,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(gyrZ);
 
                         sd_card_write_data(0x117, data);
-                        strcpy(mqtt_msg.topic_name, "rate_turn_hr");
-                        sprintf(mqtt_msg.json_string, "{\"gyrX\": %.3f, \"gyrY\": %.3f, \"gyrZ\": %.3f}",
-                                mtdata->data.f4x3[0], mtdata->data.f4x3[1], mtdata->data.f4x3[2]);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x117, data, 6);
                     }
                     break;
 
@@ -479,9 +434,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[3] = (pulse >> 24) & 0xFF;
 
                         sd_card_write_data(0x118, data);
-                        strcpy(mqtt_msg.topic_name, "gnss_pulse");
-                        sprintf(mqtt_msg.json_string, "{\"pulse\": %lu}", pulse);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x118, data, 4);
                     }
                     break;
 
@@ -501,10 +454,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(magZ);
 
                         sd_card_write_data(0x121, data);
-                        strcpy(mqtt_msg.topic_name, "magnetic");
-                        sprintf(mqtt_msg.json_string, "{\"magX\": %.3f, \"magY\": %.3f, \"magZ\": %.3f}",
-                                mtdata->data.f4x3[0], mtdata->data.f4x3[1], mtdata->data.f4x3[2]);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x121, data, 6);
                     }
                     break;
 
@@ -517,9 +467,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[1] = LO8(alt);
 
                         sd_card_write_data(0x128, data);
-                        strcpy(mqtt_msg.topic_name, "altitude");
-                        sprintf(mqtt_msg.json_string, "{\"alt\": %.3f}", mtdata->data.f4);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x128, data, 2);
                     }
                     break;
 
@@ -538,10 +486,7 @@ void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata)
                         data[5] = LO8(vel_z);
 
                         sd_card_write_data(0x129, data);
-                        strcpy(mqtt_msg.topic_name, "velocity");
-                        sprintf(mqtt_msg.json_string, "{\"velX\": %.3f, \"velY\": %.3f, \"velZ\": %.3f}",
-                                mtdata->data.f4x3[0], mtdata->data.f4x3[1], mtdata->data.f4x3[2]);
-                        osMessageQueuePut(MQTT_queueHandle, &mqtt_msg, 0U, 0U);
+                        CAN_Send(&hcan1, 0x129, data, 6);
 
 
                     }

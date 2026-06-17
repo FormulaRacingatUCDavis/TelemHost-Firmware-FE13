@@ -36,9 +36,9 @@
 #include "config.h"
 #include "udp.h"
 
-#include "mqtt_conn.h"
-
-#include <wolfmqtt/mqtt_client.h>
+//#include "mqtt_conn.h"
+//
+//#include <wolfmqtt/mqtt_client.h>
 
 
 /* USER CODE END Includes */
@@ -791,7 +791,7 @@ void MainEntry(void *argument)
 
 
 	// zsend data to ESP32
-	telem_send();
+	//telem_send();
 	//write_rx_to_sd();
 
 //	 uint8_t test_data[8];
@@ -866,50 +866,50 @@ void SDCardEntry(void *argument)
 /* USER CODE END Header_UDPServerEntry */
 void UDPServerEntry(void *argument)
 {
-  /* USER CODE BEGIN UDPServerEntry */
-	static struct netconn *conn;
-	static struct netbuf *buf;
-	char smsg[200];
-	err_t err;
-	struct pbuf *txBuf;
-
-	MqttPublish publish;
-	MqttClient client;
-
-	/* Create a new connection identifier */
-	conn = netconn_new(NETCONN_UDP);
-
-	if (conn == NULL) {
-		// Failed to create connection
-		osThreadTerminate(osThreadGetId());
-	}
-
-	/* Bind connection to the port 7 */
-	err = netconn_bind(conn, IP_ADDR_ANY, UDP_SERVER_PORT);
-
-	if (err != ERR_OK) {
-		// Failed to bind connection
-		netconn_delete(conn);
-		osThreadTerminate(osThreadGetId());
-	}
-
-	//init MQTT publish
-	memset(&publish, 0, sizeof(publish));
-	publish.qos = MQTT_QOS_0; //ask victor which quality of service to us (1, 2, or 3)
-	publish.retain = 0;
-	publish.duplicate = 0;
-	publish.buffer = (byte*) smsg;
+//  /* USER CODE BEGIN UDPServerEntry */
+//	static struct netconn *conn;
+//	static struct netbuf *buf;
+//	char smsg[200];
+//	err_t err;
+//	struct pbuf *txBuf;
+//
+//	MqttPublish publish;
+//	MqttClient client;
+//
+//	/* Create a new connection identifier */
+//	conn = netconn_new(NETCONN_UDP);
+//
+//	if (conn == NULL) {
+//		// Failed to create connection
+//		osThreadTerminate(osThreadGetId());
+//	}
+//
+//	/* Bind connection to the port 7 */
+//	err = netconn_bind(conn, IP_ADDR_ANY, UDP_SERVER_PORT);
+//
+//	if (err != ERR_OK) {
+//		// Failed to bind connection
+//		netconn_delete(conn);
+//		osThreadTerminate(osThreadGetId());
+//	}
+//
+//	//init MQTT publish
+//	memset(&publish, 0, sizeof(publish));
+//	publish.qos = MQTT_QOS_0; //ask victor which quality of service to us (1, 2, or 3)
+//	publish.retain = 0;
+//	publish.duplicate = 0;
+//	publish.buffer = (byte*) smsg;
 
 
 	/* Infinite loop */
-	for(;;)
-	{
-		MQTT_update(conn, buf, smsg, &err, txBuf, MQTT_queueHandle, &publish, &client);
-		osDelay(1);
-	}
+//	for(;;)
+//	{
+//		MQTT_update(conn, buf, smsg, &err, txBuf, MQTT_queueHandle, &publish, &client);
+//		osDelay(1);
+//	}
 
   	// In case we accidentally leave the infinite loop
-	netconn_delete(conn);
+//	netconn_delete(conn);
 	osThreadTerminate(osThreadGetId());
   /* USER CODE END UDPServerEntry */
 }

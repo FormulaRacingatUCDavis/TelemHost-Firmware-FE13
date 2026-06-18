@@ -30,7 +30,7 @@ extern CAN_HandleTypeDef hcan1;
 // PRIVATE FUNCTION PROTOTYPES
 void imu_callback(XsensEventFlag_t event, XsensEventData_t *mtdata);
 
-#define CAN_SEND_DELAY 100
+#define CAN_SEND_DELAY 50
 uint32_t prev_sends[21] = {0};
 uint32_t time_diff = 0;
 

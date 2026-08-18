@@ -18,9 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
-#include "fatfs.h"
-#include "lwip.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -29,12 +26,10 @@
 #include "can_manager.h"
 #include "sensors.h"
 #include "fsm.h"
-#include "sd_card.h"
 #include "telem.h"
 #include "xsens.h"
 #include "serial_print.h"
 #include "config.h"
-#include "udp.h"
 
 //#include "mqtt_conn.h"
 //
@@ -44,7 +39,6 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-typedef StaticQueue_t osStaticMessageQDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -63,10 +57,6 @@ typedef StaticQueue_t osStaticMessageQDef_t;
 CAN_HandleTypeDef hcan1;
 CAN_HandleTypeDef hcan2;
 
-SD_HandleTypeDef hsd1;
-DMA_HandleTypeDef hdma_sdmmc1_rx;
-DMA_HandleTypeDef hdma_sdmmc1_tx;
-
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim7;
@@ -75,38 +65,6 @@ UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart2_rx;
 
-/* Definitions for DashboardMain */
-osThreadId_t DashboardMainHandle;
-const osThreadAttr_t DashboardMain_attributes = {
-  .name = "DashboardMain",
-  .stack_size = 256 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for SDCard */
-osThreadId_t SDCardHandle;
-const osThreadAttr_t SDCard_attributes = {
-  .name = "SDCard",
-  .stack_size = 2048 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for UDPServer */
-osThreadId_t UDPServerHandle;
-const osThreadAttr_t UDPServer_attributes = {
-  .name = "UDPServer",
-  .stack_size = 256 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for MQTT_queue */
-osMessageQueueId_t MQTT_queueHandle;
-uint8_t MQTT_queueBuffer[ 16 * sizeof( MQTTMessageFormat_t ) ];
-osStaticMessageQDef_t MQTT_queueControlBlock;
-const osMessageQueueAttr_t MQTT_queue_attributes = {
-  .name = "MQTT_queue",
-  .cb_mem = &MQTT_queueControlBlock,
-  .cb_size = sizeof(MQTT_queueControlBlock),
-  .mq_mem = &MQTT_queueBuffer,
-  .mq_size = sizeof(MQTT_queueBuffer)
-};
 /* USER CODE BEGIN PV */
 
 // Keeps track of timer waiting for pre-charging
@@ -123,17 +81,12 @@ static void MPU_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_CAN2_Init(void);
-static void MX_SDMMC1_SD_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_TIM7_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART2_UART_Init(void);
-void MainEntry(void *argument);
-void SDCardEntry(void *argument);
-void UDPServerEntry(void *argument);
-
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -204,12 +157,10 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_CAN2_Init();
-  MX_SDMMC1_SD_Init();
   MX_TIM4_Init();
   MX_CAN1_Init();
   MX_USART3_UART_Init();
   MX_TIM7_Init();
-  MX_FATFS_Init();
   MX_TIM1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
@@ -218,56 +169,11 @@ int main(void)
 
   /* USER CODE END 2 */
 
-  /* Init scheduler */
-  osKernelInitialize();
-
-  /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
-
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
-
-  /* USER CODE BEGIN RTOS_TIMERS */
-  /* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
-
-  /* Create the queue(s) */
-  /* creation of MQTT_queue */
-  MQTT_queueHandle = osMessageQueueNew (16, sizeof(MQTTMessageFormat_t), &MQTT_queue_attributes);
-
-  /* USER CODE BEGIN RTOS_QUEUES */
-  /* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
-
-  /* Create the thread(s) */
-  /* creation of DashboardMain */
-  DashboardMainHandle = osThreadNew(MainEntry, NULL, &DashboardMain_attributes);
-
-  /* creation of SDCard */
-  SDCardHandle = osThreadNew(SDCardEntry, NULL, &SDCard_attributes);
-
-  /* creation of UDPServer */
-  UDPServerHandle = osThreadNew(UDPServerEntry, NULL, &UDPServer_attributes);
-
-  /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
-
-  /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
-
-  /* Start scheduler */
-  osKernelStart();
-
-  /* We should never get here as control is now taken by the scheduler */
-
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  Xsens_Update(&huart2);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -436,37 +342,6 @@ static void MX_CAN2_Init(void)
   }
 
   /* USER CODE END CAN2_Init 2 */
-
-}
-
-/**
-  * @brief SDMMC1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SDMMC1_SD_Init(void)
-{
-
-  /* USER CODE BEGIN SDMMC1_Init 0 */
-
-  /* USER CODE END SDMMC1_Init 0 */
-
-  /* USER CODE BEGIN SDMMC1_Init 1 */
-
-  /* USER CODE END SDMMC1_Init 1 */
-  hsd1.Instance = SDMMC1;
-  hsd1.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
-  hsd1.Init.ClockBypass = SDMMC_CLOCK_BYPASS_DISABLE;
-  hsd1.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
-  hsd1.Init.BusWide = SDMMC_BUS_WIDE_1B;
-  hsd1.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd1.Init.ClockDiv = 0;
-  /* USER CODE BEGIN SDMMC1_Init 2 */
-  hsd1.Init.BusWide = SDMMC_BUS_WIDE_1B;
-
-  if (HAL_SD_Init(&hsd1) != HAL_OK) return;
-  if (HAL_SD_ConfigWideBusOperation(&hsd1, SDMMC_BUS_WIDE_4B) != HAL_OK) return;
-  /* USER CODE END SDMMC1_Init 2 */
 
 }
 
@@ -679,19 +554,12 @@ static void MX_DMA_Init(void)
 {
 
   /* DMA controller clock enable */
-  __HAL_RCC_DMA2_CLK_ENABLE();
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
   /* DMA1_Stream5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
-  /* DMA2_Stream3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
-  /* DMA2_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
 
 }
 
@@ -707,14 +575,13 @@ static void MX_GPIO_Init(void)
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOF, GPIO1_3V3_Pin|GPIO2_3v3_Pin, GPIO_PIN_RESET);
@@ -761,7 +628,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GASP_INTERRUPT_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
@@ -771,148 +638,6 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
-
-/* USER CODE BEGIN Header_MainEntry */
-/**
-  * @brief  Function implementing the DashboardMain thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_MainEntry */
-void MainEntry(void *argument)
-{
-  /* init code for LWIP */
-  MX_LWIP_Init();
-  /* USER CODE BEGIN 5 */
-
-  /* Infinite loop */
-  for(;;)
-  {
-
-
-	// zsend data to ESP32
-	//telem_send();
-	//write_rx_to_sd();
-
-//	 uint8_t test_data[8];
-//	 test_data[0] = 1;
-//	 test_data[1] = 2;
-//	 test_data[2] = 3;
-//	 test_data[3] = 4;
-//	 test_data[4] = 5;
-//	 test_data[5] = 6;
-//	 test_data[6] = 7;
-//	 test_data[7] = 8;
-//	 CAN_Send(&hcan1, 0x0f, test_data, 8); //TODO REMOVE LATER
-//	 CAN_Send(&hcan2, 0x0f, test_data, 8);
-//	 sd_card_write_data(0x01, test_data);
-
-	//print("USB alive!\n");
-//	HAL_UART_Transmit(&huart3, test_data, 8, 1000);
-
-	// TODO REMOVE
-	//print_cooling_data();
-
-	Xsens_Update(&huart2);
-	//HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);
-  }
-
-  // In case we accidentally leave the infinite loop
-  osThreadTerminate(osThreadGetId());
-  /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_SDCardEntry */
-/**
-* @brief Function implementing the SDCard thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_SDCardEntry */
-void SDCardEntry(void *argument)
-{
-  /* USER CODE BEGIN SDCardEntry */
-
-	sd_card_mount_result_t res = sd_card_mount();
-	if (res != SD_CARD_MOUNT_RESULT_SUCCESS) {
-		// FAILED TO MOUNT SD CARD!
-		osThreadTerminate(osThreadGetId());
-	}
-
-	/* Infinite loop */
-	while (1)
-	{
-//		osDelay(5);
-//		HAL_GPIO_TogglePin(HEARTBEAT_GPIO_Port, HEARTBEAT_Pin);
-//		static uint8_t n = 0;
-//		uint8_t d[] = { 0, 0, 0, 0, 0, 0, 0, n };
-//		sd_card_write_data(0x12345678, d);
-//		n++;
-		sd_card_update_async();
-	}
-
-	/* In case we accidentally leave the infinite loop */
-	sd_card_flush();
-	osThreadTerminate(osThreadGetId());
-  /* USER CODE END SDCardEntry */
-}
-
-/* USER CODE BEGIN Header_UDPServerEntry */
-/**
-* @brief Function implementing the UDPServer thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_UDPServerEntry */
-void UDPServerEntry(void *argument)
-{
-//  /* USER CODE BEGIN UDPServerEntry */
-//	static struct netconn *conn;
-//	static struct netbuf *buf;
-//	char smsg[200];
-//	err_t err;
-//	struct pbuf *txBuf;
-//
-//	MqttPublish publish;
-//	MqttClient client;
-//
-//	/* Create a new connection identifier */
-//	conn = netconn_new(NETCONN_UDP);
-//
-//	if (conn == NULL) {
-//		// Failed to create connection
-//		osThreadTerminate(osThreadGetId());
-//	}
-//
-//	/* Bind connection to the port 7 */
-//	err = netconn_bind(conn, IP_ADDR_ANY, UDP_SERVER_PORT);
-//
-//	if (err != ERR_OK) {
-//		// Failed to bind connection
-//		netconn_delete(conn);
-//		osThreadTerminate(osThreadGetId());
-//	}
-//
-//	//init MQTT publish
-//	memset(&publish, 0, sizeof(publish));
-//	publish.qos = MQTT_QOS_0; //ask victor which quality of service to us (1, 2, or 3)
-//	publish.retain = 0;
-//	publish.duplicate = 0;
-//	publish.buffer = (byte*) smsg;
-
-
-	/* Infinite loop */
-//	for(;;)
-//	{
-//		MQTT_update(conn, buf, smsg, &err, txBuf, MQTT_queueHandle, &publish, &client);
-//		osDelay(1);
-//	}
-
-  	// In case we accidentally leave the infinite loop
-//	netconn_delete(conn);
-	osThreadTerminate(osThreadGetId());
-  /* USER CODE END UDPServerEntry */
-}
 
  /* MPU Configuration */
 
@@ -955,20 +680,6 @@ void MPU_Config(void)
   MPU_InitStruct.Size = MPU_REGION_SIZE_1MB;
   MPU_InitStruct.AccessPermission = MPU_REGION_NO_ACCESS;
   MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
-
-  HAL_MPU_ConfigRegion(&MPU_InitStruct);
-
-  /** Initializes and configures the Region and the memory to be protected
-  */
-  MPU_InitStruct.Number = MPU_REGION_NUMBER3;
-  MPU_InitStruct.BaseAddress = 0x2004C000;
-  MPU_InitStruct.Size = MPU_REGION_SIZE_16KB;
-  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL1;
-  MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
-  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
-  MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
-  MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
-  MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
   /* Enables the MPU */

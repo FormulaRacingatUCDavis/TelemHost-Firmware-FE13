@@ -1,5 +1,4 @@
 #include "can_manager.h"
-#include "sd_card.h"
 #include "serial_print.h"
 
 volatile uint8_t mc_lockout;
@@ -67,252 +66,252 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 // TODO ADD CASES FOR NEW IDS AND ADD TO ENUM
 static void save_can_rx_data(CAN_RxHeaderTypeDef rxHeader, uint8_t rxData[]) {
     // gets message and updates values
-	sd_card_write_can_rx(rxHeader, rxData);  // TODO REMOVE
-	switch (rxHeader.StdId) {
-		case BMS_STATUS_MSG:
-			bms_status = rxData[0];
-			sd_card_write_can_rx(rxHeader, rxData);
-
-
-			break;
-		case DIAGNOSTIC_BMS_DATA:
-			PACK_TEMP = rxData[0];
-			soc = rxData[1];
-			pack_voltage = (rxData[2] << 8);
-			pack_voltage += rxData[3];
-
-
-			sd_card_write_can_rx(rxHeader, rxData);
-
-		AVG_DIAGNOSTIC_BMS_DATA = (float)(PACK_TEMP + soc + pack_voltage) / 3.0f;
-
-
-
-			break;
-
-
-		case PEI_STATUS_MSG:
-			shutdown_flags = rxData[0];
-			sd_card_write_can_rx(rxHeader, rxData);
-			break;
-		case MC_VOLTAGE_INFO:
-			static uint8_t mc_voltage_msg_counter = 0;
-
-			capacitor_volt_x10 = (rxData[1] << 8); // upper bits
-			capacitor_volt_x10 += rxData[0]; // lower bits
-
-			if (mc_voltage_msg_counter == 0)
-				sd_card_write_can_rx(rxHeader, rxData);
-
-			mc_voltage_msg_counter++;
-			mc_voltage_msg_counter %= 50;
-
-			break;
-		case MC_INTERNAL_STATES:
-			static uint8_t mc_state_msg_counter = 0;
-
-			mc_lockout = rxData[6] & 0b1000000;
-			mc_enabled = rxData[6] & 0b1;
-
-			if (mc_state_msg_counter == 0)
-				sd_card_write_can_rx(rxHeader, rxData);
-
-			mc_state_msg_counter++;
-			mc_state_msg_counter %= 50;
-
-			break;
-		case MC_FAULT_CODES:
-			static uint8_t first_fault = 1;
-			for (uint8_t i = 0; i < 8; ++i) {
-				if (rxData[i] > 0) {
-					mc_fault = 1;
-
-					if (first_fault) {
-						sd_card_write_can_rx(rxHeader, rxData);
-						first_fault = 0;
-					}
-
-					break;
-				}
-				else {
-					mc_fault = 0;
-					first_fault = 1;
-				}
-			}
-			break;
-		case MC_PARAM_RESPONSE:
-			//static uint8_t mc_param_msg_counter = 0;
-
-			if (rxData[0] == 0x20 && rxData[2] == 1) {
-				mc_fault_clear_success = 1;
-			}
-			break;
-//		case WHEEL_SPEED_REAR:
-//			rear_right_wheel_speed = (rxData[0] << 8);
-//			rear_right_wheel_speed += rxData[1];
-//			rear_left_wheel_speed = (rxData[2] << 8);
-//			rear_left_wheel_speed += rxData[3];
+//	sd_card_write_can_rx(rxHeader, rxData);  // TODO REMOVE
+//	switch (rxHeader.StdId) {
+//		case BMS_STATUS_MSG:
+//			bms_status = rxData[0];
+//			sd_card_write_can_rx(rxHeader, rxData);
+//
+//
+//			break;
+//		case DIAGNOSTIC_BMS_DATA:
+//			PACK_TEMP = rxData[0];
+//			soc = rxData[1];
+//			pack_voltage = (rxData[2] << 8);
+//			pack_voltage += rxData[3];
+//
+//
+//			sd_card_write_can_rx(rxHeader, rxData);
+//
+//		AVG_DIAGNOSTIC_BMS_DATA = (float)(PACK_TEMP + soc + pack_voltage) / 3.0f;
+//
+//
+//
+//			break;
+//
+//
+//		case PEI_STATUS_MSG:
+//			shutdown_flags = rxData[0];
+//			sd_card_write_can_rx(rxHeader, rxData);
+//			break;
+//		case MC_VOLTAGE_INFO:
+//			static uint8_t mc_voltage_msg_counter = 0;
+//
+//			capacitor_volt_x10 = (rxData[1] << 8); // upper bits
+//			capacitor_volt_x10 += rxData[0]; // lower bits
+//
+//			if (mc_voltage_msg_counter == 0)
+//				sd_card_write_can_rx(rxHeader, rxData);
+//
+//			mc_voltage_msg_counter++;
+//			mc_voltage_msg_counter %= 50;
+//
+//			break;
+//		case MC_INTERNAL_STATES:
+//			static uint8_t mc_state_msg_counter = 0;
+//
+//			mc_lockout = rxData[6] & 0b1000000;
+//			mc_enabled = rxData[6] & 0b1;
+//
+//			if (mc_state_msg_counter == 0)
+//				sd_card_write_can_rx(rxHeader, rxData);
+//
+//			mc_state_msg_counter++;
+//			mc_state_msg_counter %= 50;
+//
+//			break;
+//		case MC_FAULT_CODES:
+//			static uint8_t first_fault = 1;
+//			for (uint8_t i = 0; i < 8; ++i) {
+//				if (rxData[i] > 0) {
+//					mc_fault = 1;
+//
+//					if (first_fault) {
+//						sd_card_write_can_rx(rxHeader, rxData);
+//						first_fault = 0;
+//					}
+//
+//					break;
+//				}
+//				else {
+//					mc_fault = 0;
+//					first_fault = 1;
+//				}
+//			}
+//			break;
+//		case MC_PARAM_RESPONSE:
+//			//static uint8_t mc_param_msg_counter = 0;
+//
+//			if (rxData[0] == 0x20 && rxData[2] == 1) {
+//				mc_fault_clear_success = 1;
+//			}
+//			break;
+////		case WHEEL_SPEED_REAR:
+////			rear_right_wheel_speed = (rxData[0] << 8);
+////			rear_right_wheel_speed += rxData[1];
+////			rear_left_wheel_speed = (rxData[2] << 8);
+////			rear_left_wheel_speed += rxData[3];
+////			wheel_updated[1] = 1;
+////			telem_id = 0;
+////			break;
+//		case MC_MOTOR_POSITION:
+//			static uint8_t mc_motor_pos_msg_counter = 0;
+//
+//			motor_speed = (rxData[3] << 8);
+//			motor_speed |= rxData[2];
+//			motor_speed *= -1;
+//
+//			// TEMPORARY?
+//			rear_right_wheel_speed = (rxData[3] << 8);
+//			rear_right_wheel_speed += rxData[2];
+//			rear_right_wheel_speed *= -1;
 //			wheel_updated[1] = 1;
 //			telem_id = 0;
+//
+//			if (mc_motor_pos_msg_counter == 0)
+//				sd_card_write_can_rx(rxHeader, rxData);
+//
+//			++mc_motor_pos_msg_counter;
+//			mc_motor_pos_msg_counter %= 10;
+//
 //			break;
-		case MC_MOTOR_POSITION:
-			static uint8_t mc_motor_pos_msg_counter = 0;
-
-			motor_speed = (rxData[3] << 8);
-			motor_speed |= rxData[2];
-			motor_speed *= -1;
-
-			// TEMPORARY?
-			rear_right_wheel_speed = (rxData[3] << 8);
-			rear_right_wheel_speed += rxData[2];
-			rear_right_wheel_speed *= -1;
-			wheel_updated[1] = 1;
-			telem_id = 0;
-
-			if (mc_motor_pos_msg_counter == 0)
-				sd_card_write_can_rx(rxHeader, rxData);
-
-			++mc_motor_pos_msg_counter;
-			mc_motor_pos_msg_counter %= 10;
-
-			break;
-		case COOLING_LOOP:
-			inlet_temp = (rxData[0] << 8);
-			inlet_temp += rxData[1];
-			outlet_temp = (rxData[2] << 8);
-			outlet_temp += rxData[3];
-			inlet_pres = (rxData[4] << 8);
-			inlet_pres += rxData[5];
-			outlet_pres = (rxData[6] << 8);
-			outlet_pres += rxData[7];
-			telem_id = 1;
-
-			sd_card_write_can_rx(rxHeader, rxData);
-			break;
-		case MC_TEMP_3:
-			static uint8_t motor_temp_msg_counter = 0;
-
-			motor_temp = rxData[5] << 8;
-			motor_temp += rxData[4];
-
-			if (motor_temp_msg_counter == 0)
-				sd_card_write_can_rx(rxHeader, rxData);
-			++motor_temp_msg_counter;
-			motor_temp_msg_counter %= 50;
-
-			break;
-		case MC_TEMP_1:
-			static uint8_t mc_temp_msg_counter = 0;
-
-			uint16_t module_a_temp = (rxData[1] << 8) + rxData[0];
-			uint16_t module_b_temp = (rxData[3] << 8) + rxData[2];
-			uint16_t module_c_temp = (rxData[5] << 8) + rxData[4];
-			mc_temp = (module_a_temp + module_b_temp + module_c_temp) / 3; // no unit conversion, don't want to store float
-
-			if (mc_temp_msg_counter == 0)
-				sd_card_write_can_rx(rxHeader, rxData);
-			++mc_temp_msg_counter;
-			mc_temp_msg_counter %= 50;
-
-			break;
-		case MC_INTERNAL_VOLTS:
-			static uint8_t mc_glv_msg_counter = 0;
-
-			glv_v = rxData[7] << 8;
-			glv_v += rxData[6]; // no unit conversion, don't want to store float
-
-			if (mc_glv_msg_counter == 0)
-				sd_card_write_can_rx(rxHeader, rxData);
-
-			++mc_glv_msg_counter;
-			mc_glv_msg_counter %= 100;
-
-			break;
-		case MC_INTERNAL_CURRENTS:
-			int16_t current_x10 = (rxData[7] << 8) + rxData[6];
-			if(capacitor_volt_x10 > 0 && current_x10 > 0){
-				uint16_t power = (capacitor_volt_x10 / 10) * (current_x10 / 10) / 1000;
-				if(power > max_power) max_power = power;
-			}
-			break;
-		case STRAIN_GAUGE_REAR:
-			sg_rear = rxData[0] << 8;
-			sg_rear += rxData[1];
-			break;
-		case PEI_CURRENT:
-			pei_current = (rxData[0] << 8) | rxData[1];
-			break;
-		case BMS_VOLTAGES:
-			pack_num = rxData[0];
-			pack_group_index = rxData[1] * 3;
-			switch (pack_num){
-			case 0:
-				pack0_voltages[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 100;
-				pack0_voltages[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 100;
-				pack0_voltages[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 100;
-				break;
-			case 1:
-				pack1_voltages[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 100;
-				pack1_voltages[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 100;
-				pack1_voltages[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 100;
-				break;
-			case 2:
-				pack2_voltages[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 100;
-				pack2_voltages[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 100;
-				pack2_voltages[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 100;
-				break;
-			case 3:
-				pack3_voltages[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 100;
-				pack3_voltages[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 100;
-				pack3_voltages[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 100;
-				break;
-			case 4:
-				pack4_voltages[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 100;
-				pack4_voltages[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 100;
-				pack4_voltages[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 100;
-				break;
-			}
-			break;
-		case BMS_TEMPS:
-			pack_num = rxData[0];
-			pack_group_index = rxData[1] * 3;
-			switch (pack_num){
-			case 0:
-				pack0_temps[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 1000;
-				if(pack_group_index == 15) break;
-				pack0_temps[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 1000;
-				pack0_temps[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 1000;
-				break;
-			case 1:
-				pack1_temps[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 1000;
-				if(pack_group_index == 15) break;
-				pack1_temps[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 1000;
-				pack1_temps[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 1000;
-				break;
-			case 2:
-				pack2_temps[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 1000;
-				if(pack_group_index == 15) break;
-				pack2_temps[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 1000;
-				pack2_temps[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 1000;
-				break;
-			case 3:
-				pack3_temps[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 1000;
-				if(pack_group_index == 15) break;
-				pack3_temps[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 1000;
-				pack3_temps[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 1000;
-				break;
-			case 4:
-				pack4_temps[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 1000;
-				if(pack_group_index == 15) break;
-				pack4_temps[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 1000;
-				pack4_temps[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 1000;
-				break;
-			}
-			break;
-		default:
-			// no valid input received
-			break;
-	}
+//		case COOLING_LOOP:
+//			inlet_temp = (rxData[0] << 8);
+//			inlet_temp += rxData[1];
+//			outlet_temp = (rxData[2] << 8);
+//			outlet_temp += rxData[3];
+//			inlet_pres = (rxData[4] << 8);
+//			inlet_pres += rxData[5];
+//			outlet_pres = (rxData[6] << 8);
+//			outlet_pres += rxData[7];
+//			telem_id = 1;
+//
+//			sd_card_write_can_rx(rxHeader, rxData);
+//			break;
+//		case MC_TEMP_3:
+//			static uint8_t motor_temp_msg_counter = 0;
+//
+//			motor_temp = rxData[5] << 8;
+//			motor_temp += rxData[4];
+//
+//			if (motor_temp_msg_counter == 0)
+//				sd_card_write_can_rx(rxHeader, rxData);
+//			++motor_temp_msg_counter;
+//			motor_temp_msg_counter %= 50;
+//
+//			break;
+//		case MC_TEMP_1:
+//			static uint8_t mc_temp_msg_counter = 0;
+//
+//			uint16_t module_a_temp = (rxData[1] << 8) + rxData[0];
+//			uint16_t module_b_temp = (rxData[3] << 8) + rxData[2];
+//			uint16_t module_c_temp = (rxData[5] << 8) + rxData[4];
+//			mc_temp = (module_a_temp + module_b_temp + module_c_temp) / 3; // no unit conversion, don't want to store float
+//
+//			if (mc_temp_msg_counter == 0)
+//				sd_card_write_can_rx(rxHeader, rxData);
+//			++mc_temp_msg_counter;
+//			mc_temp_msg_counter %= 50;
+//
+//			break;
+//		case MC_INTERNAL_VOLTS:
+//			static uint8_t mc_glv_msg_counter = 0;
+//
+//			glv_v = rxData[7] << 8;
+//			glv_v += rxData[6]; // no unit conversion, don't want to store float
+//
+//			if (mc_glv_msg_counter == 0)
+//				sd_card_write_can_rx(rxHeader, rxData);
+//
+//			++mc_glv_msg_counter;
+//			mc_glv_msg_counter %= 100;
+//
+//			break;
+//		case MC_INTERNAL_CURRENTS:
+//			int16_t current_x10 = (rxData[7] << 8) + rxData[6];
+//			if(capacitor_volt_x10 > 0 && current_x10 > 0){
+//				uint16_t power = (capacitor_volt_x10 / 10) * (current_x10 / 10) / 1000;
+//				if(power > max_power) max_power = power;
+//			}
+//			break;
+//		case STRAIN_GAUGE_REAR:
+//			sg_rear = rxData[0] << 8;
+//			sg_rear += rxData[1];
+//			break;
+//		case PEI_CURRENT:
+//			pei_current = (rxData[0] << 8) | rxData[1];
+//			break;
+//		case BMS_VOLTAGES:
+//			pack_num = rxData[0];
+//			pack_group_index = rxData[1] * 3;
+//			switch (pack_num){
+//			case 0:
+//				pack0_voltages[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 100;
+//				pack0_voltages[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 100;
+//				pack0_voltages[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 100;
+//				break;
+//			case 1:
+//				pack1_voltages[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 100;
+//				pack1_voltages[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 100;
+//				pack1_voltages[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 100;
+//				break;
+//			case 2:
+//				pack2_voltages[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 100;
+//				pack2_voltages[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 100;
+//				pack2_voltages[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 100;
+//				break;
+//			case 3:
+//				pack3_voltages[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 100;
+//				pack3_voltages[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 100;
+//				pack3_voltages[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 100;
+//				break;
+//			case 4:
+//				pack4_voltages[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 100;
+//				pack4_voltages[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 100;
+//				pack4_voltages[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 100;
+//				break;
+//			}
+//			break;
+//		case BMS_TEMPS:
+//			pack_num = rxData[0];
+//			pack_group_index = rxData[1] * 3;
+//			switch (pack_num){
+//			case 0:
+//				pack0_temps[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 1000;
+//				if(pack_group_index == 15) break;
+//				pack0_temps[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 1000;
+//				pack0_temps[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 1000;
+//				break;
+//			case 1:
+//				pack1_temps[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 1000;
+//				if(pack_group_index == 15) break;
+//				pack1_temps[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 1000;
+//				pack1_temps[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 1000;
+//				break;
+//			case 2:
+//				pack2_temps[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 1000;
+//				if(pack_group_index == 15) break;
+//				pack2_temps[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 1000;
+//				pack2_temps[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 1000;
+//				break;
+//			case 3:
+//				pack3_temps[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 1000;
+//				if(pack_group_index == 15) break;
+//				pack3_temps[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 1000;
+//				pack3_temps[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 1000;
+//				break;
+//			case 4:
+//				pack4_temps[pack_group_index] = ((rxData[2] << 8) | rxData[3]) / 1000;
+//				if(pack_group_index == 15) break;
+//				pack4_temps[pack_group_index + 1] = ((rxData[4] << 8) | rxData[5]) / 1000;
+//				pack4_temps[pack_group_index + 2] = ((rxData[6] << 8) | rxData[7]) / 1000;
+//				break;
+//			}
+//			break;
+//		default:
+//			// no valid input received
+//			break;
+//	}
 
 }
 
